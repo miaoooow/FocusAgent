@@ -1,14 +1,15 @@
 const $ = (selector) => document.querySelector(selector);
 const STORAGE_KEY = "focus-buddy-web-v1";
 const CIRCUMFERENCE = 2 * Math.PI * 96;
+const EXTENSION_MODE = Boolean(globalThis.chrome?.runtime?.id) && location.protocol === "chrome-extension:";
 
 const scenes = [
-  { name: "编程开发", keys: ["代码", "编程", "python", "java", "开发", "debug"], tools: ["代码编辑器", "终端", "项目文件"] },
-  { name: "文档写作", keys: ["文档", "报告", "论文", "简历", "写作"], tools: ["文档编辑器", "资料参考", "文件夹"] },
-  { name: "课程学习", keys: ["作业", "课程", "复习", "高数", "英语", "学习"], tools: ["课程资料", "笔记", "计算工具"] },
-  { name: "数据整理", keys: ["数据", "excel", "表格", "统计", "分析"], tools: ["表格软件", "数据文件", "计算器"] },
-  { name: "演示设计", keys: ["ppt", "演示", "答辩", "设计", "原型"], tools: ["演示软件", "素材文件", "参考资料"] },
-  { name: "视频剪辑", keys: ["视频", "剪辑", "播客", "录音"], tools: ["剪辑软件", "素材文件", "音频工具"] },
+  { name: "编程开发", keys: ["代码", "编程", "python", "java", "开发", "debug"], tools: ["代码编辑器", "终端", "项目文件"], domains: ["github.com", "stackoverflow.com", "docs.python.org"] },
+  { name: "文档写作", keys: ["文档", "报告", "论文", "简历", "写作"], tools: ["文档编辑器", "资料参考", "文件夹"], domains: ["docs.google.com", "office.com", "cnki.net"] },
+  { name: "课程学习", keys: ["作业", "课程", "复习", "高数", "英语", "学习"], tools: ["课程资料", "笔记", "计算工具"], domains: ["coursera.org", "icourse163.org", "bilibili.com"] },
+  { name: "数据整理", keys: ["数据", "excel", "表格", "统计", "分析"], tools: ["表格软件", "数据文件", "计算器"], domains: ["kaggle.com", "docs.google.com"] },
+  { name: "演示设计", keys: ["ppt", "演示", "答辩", "设计", "原型"], tools: ["演示软件", "素材文件", "参考资料"], domains: ["figma.com", "canva.com"] },
+  { name: "视频剪辑", keys: ["视频", "剪辑", "播客", "录音"], tools: ["剪辑软件", "素材文件", "音频工具"], domains: ["youtube.com", "drive.google.com"] },
 ];
 
 const defaults = {
@@ -26,6 +27,48 @@ let hiddenAt = null;
 let audioContext = null;
 let soundNodes = [];
 let pendingPetImage = state.petImage;
+let lastExtensionEventId = 0;
+let lastExtensionDriftCount = 0;
+let extensionRefreshBusy = false;
+let domainsTouched = false;
+let initialDomain = "";
+
+function extensionSend(type, payload) {
+  if (!EXTENSION_MODE) return Promise.resolve({ ok: false, error: "扩展未连接" });
+  return chrome.runtime.sendMessage({ type, payload });
+}
+
+function normalizeDomain(value) {
+  const raw = String(value || "").trim().toLowerCase();
+  if (!raw) return "";
+  try {
+    const url = raw.includes("://") ? new URL(raw) : new URL(`https://${raw}`);
+    return url.hostname.replace(/^www\./, "");
+  } catch {
+    return raw.replace(/^www\./, "").split("/")[0];
+  }
+}
+
+function allowedDomains() {
+  return [...new Set(
+    $("#allowed-domains").value
+      .split(/[\n,，\s]+/)
+      .map(normalizeDomain)
+      .filter(Boolean)
+  )];
+}
+
+function setAllowedDomains(domains) {
+  $("#allowed-domains").value = [...new Set(domains.map(normalizeDomain).filter(Boolean))].join(", ");
+}
+
+function addAllowedDomain(domain) {
+  const normalized = normalizeDomain(domain);
+  if (!normalized) return;
+  setAllowedDomains([...allowedDomains(), normalized]);
+  domainsTouched = true;
+  renderPlan();
+}
 
 function petName() {
   return (state.petName || "Luna").trim() || "Luna";
@@ -54,11 +97,28 @@ function saveState() {
 function parseGoal(goal) {
   const normalized = goal.toLowerCase();
   const matched = scenes.filter((scene) => scene.keys.some((key) => normalized.includes(key)));
-  const selected = matched.length ? matched.slice(0, 2) : [{ name: "专注任务", tools: ["任务资料", "必要工具"] }];
+  const selected = matched.length
+    ? matched.slice(0, 2)
+    : [{ name: "专注任务", tools: ["任务资料", "必要工具"], domains: [] }];
   return {
     names: selected.map((scene) => scene.name),
     tools: [...new Set(selected.flatMap((scene) => scene.tools))],
+    domains: [...new Set(selected.flatMap((scene) => scene.domains || []))],
   };
+}
+
+function renderDomainSuggestions(domains = []) {
+  const container = $("#domain-suggestions");
+  if (!domains.length) {
+    container.innerHTML = "<small>没有固定网站也没关系，可以直接输入域名。</small>";
+    return;
+  }
+  container.innerHTML = domains
+    .map((domain) => `<button type="button" data-domain="${domain}">＋ ${domain}</button>`)
+    .join("");
+  container.querySelectorAll("[data-domain]").forEach((button) => {
+    button.addEventListener("click", () => addAllowedDomain(button.dataset.domain));
+  });
 }
 
 function renderPlan() {
@@ -76,13 +136,16 @@ function renderPlan() {
   }
   if (!goal) {
     $("#plan-result").innerHTML = "<p>写下目标后，这里会出现本地场景建议。</p>";
+    renderDomainSuggestions([]);
     return;
   }
   const plan = parseGoal(goal);
+  if (!domainsTouched) setAllowedDomains([initialDomain, ...plan.domains]);
   $("#plan-result").innerHTML = `
-    <p>识别为 <b>${plan.names.join(" + ")}</b>。网页版不会读取其他软件，建议开始前准备：</p>
+    <p>识别为 <b>${plan.names.join(" + ")}</b>。${EXTENSION_MODE ? "扩展会按下方域名监督当前标签页；建议准备：" : "免安装网页不会读取其他软件；建议准备："}</p>
     <div class="plan-chips">${plan.tools.map((tool) => `<span>${tool}</span>`).join("")}</div>
   `;
+  renderDomainSuggestions(plan.domains);
 }
 
 function formatTime(milliseconds) {
@@ -118,7 +181,7 @@ function catReact(kind, title, note) {
   $("#cat-note").textContent = note;
 }
 
-function startSession() {
+async function startSession() {
   const goal = $("#goal").value.trim();
   if (!goal) {
     $("#form-message").textContent = `${petName()} 还不知道该盯哪件事，请先写下目标。`;
@@ -127,6 +190,32 @@ function startSession() {
   }
   const durationMinutes = Number($("#duration").value);
   const durationSeconds = durationMinutes * 60;
+  if (EXTENSION_MODE) {
+    const domains = allowedDomains();
+    if (!domains.length) {
+      $("#form-message").textContent = "至少留一个本轮允许访问的网站；可以点“当前网站”或场景推荐。";
+      $("#allowed-domains").focus();
+      return;
+    }
+    $("#start").disabled = true;
+    const result = await extensionSend("start", {
+      goal,
+      durationMinutes,
+      allowedDomains: domains,
+      tone: $("#tone").value,
+    });
+    $("#start").disabled = false;
+    if (!result?.ok) {
+      $("#form-message").textContent = result?.error || "扩展后台没有响应，请重新加载扩展。";
+      return;
+    }
+    applyExtensionState(result.state);
+    $("#form-message").textContent = `已开始：只允许 ${domains.join("、")}，离开 8 秒后提醒。`;
+    catReact("focus", `${petName()} 开工了`, "扩展会继续监督，即使你切到别的标签页。");
+    beginTimer();
+    render();
+    return;
+  }
   state.session = {
     goal,
     tone: $("#tone").value,
@@ -144,8 +233,25 @@ function startSession() {
   render();
 }
 
-function pauseOrResume() {
+async function pauseOrResume() {
   if (!state.session) return;
+  if (EXTENSION_MODE) {
+    const action = state.session.status === "running" ? "pause" : "resume";
+    const result = await extensionSend(action);
+    if (!result?.ok) {
+      $("#form-message").textContent = result?.error || "扩展后台没有响应。";
+      return;
+    }
+    applyExtensionState(result.state);
+    catReact(
+      "",
+      action === "pause" ? "先喘口气" : "继续就好",
+      action === "pause" ? "计时和标签页监督都暂停了。" : "扩展已经重新盯住当前标签页。"
+    );
+    beginTimer();
+    render();
+    return;
+  }
   if (state.session.status === "running") {
     state.session.remainingWhenPaused = remainingMs();
     state.session.status = "paused";
@@ -163,8 +269,21 @@ function pauseOrResume() {
   render();
 }
 
-function stopSession() {
+async function stopSession() {
   if (!state.session) return;
+  if (EXTENSION_MODE) {
+    const result = await extensionSend("stop");
+    if (!result?.ok) {
+      $("#form-message").textContent = result?.error || "扩展后台没有响应。";
+      return;
+    }
+    applyExtensionState(result.state);
+    clearInterval(timerHandle);
+    timerHandle = null;
+    catReact("annoyed", "这轮先收回", "下次目标可以再小一点，但别假装没开始过。");
+    render();
+    return;
+  }
   state.session = null;
   clearInterval(timerHandle);
   timerHandle = null;
@@ -191,10 +310,59 @@ function completeSession() {
 
 function beginTimer() {
   clearInterval(timerHandle);
+  if (EXTENSION_MODE) {
+    timerHandle = setInterval(syncExtensionState, 700);
+    return;
+  }
   timerHandle = setInterval(() => {
     if (state.session?.status === "running" && remainingMs() <= 0) completeSession();
     renderSession();
   }, 500);
+}
+
+function reactToExtensionEvent(event) {
+  if (!event?.id || event.id === lastExtensionEventId) return;
+  lastExtensionEventId = event.id;
+  if (event.type === "drift") {
+    catReact("annoyed", event.title || "散步路线挺熟", event.message || "回来就好。");
+  } else if (event.type === "complete") {
+    clearInterval(timerHandle);
+    timerHandle = null;
+    catReact("happy", `${petName()} 有点骄傲`, event.message || "完成比完美更会养大一只猫。");
+  }
+}
+
+function applyExtensionState(remote) {
+  if (!remote) return;
+  state.totalMinutes = Number(remote.totalMinutes || 0);
+  state.coins = Number(remote.coins || 0);
+  state.completed = Number(remote.completed || 0);
+  state.session = remote.session ? { ...remote.session } : null;
+  saveState();
+
+  const browser = remote.browser || {};
+  if (browser.currentDomain) {
+    const verdict = browser.allowed ? "白名单内" : "白名单外";
+    $("#event-line").textContent = `当前：${browser.currentDomain} · ${verdict} · 离开白名单持续 8 秒才计为走神。`;
+  }
+  if (state.session && state.session.driftCount !== lastExtensionDriftCount) {
+    lastExtensionDriftCount = state.session.driftCount;
+  }
+  reactToExtensionEvent(remote.lastEvent);
+}
+
+async function syncExtensionState() {
+  if (!EXTENSION_MODE || extensionRefreshBusy) return;
+  extensionRefreshBusy = true;
+  try {
+    const result = await extensionSend("state");
+    if (result?.ok) {
+      applyExtensionState(result.state);
+      render();
+    }
+  } finally {
+    extensionRefreshBusy = false;
+  }
 }
 
 function registerDrift(secondsAway) {
@@ -374,10 +542,23 @@ async function playSound(type, button) {
 }
 
 $("#goal").addEventListener("input", renderPlan);
+$("#allowed-domains").addEventListener("input", () => {
+  domainsTouched = true;
+});
 $("#duration").addEventListener("change", renderSession);
 $("#start").addEventListener("click", startSession);
 $("#pause").addEventListener("click", pauseOrResume);
 $("#finish").addEventListener("click", stopSession);
+$("#use-current-domain").addEventListener("click", async () => {
+  const result = await extensionSend("activeTab");
+  const domain = result?.state?.domain || initialDomain;
+  if (domain) {
+    addAllowedDomain(domain);
+    $("#form-message").textContent = `已把 ${domain} 加入本轮白名单。`;
+  } else {
+    $("#form-message").textContent = "当前没有可识别的网站，请直接输入域名。";
+  }
+});
 $("#pet-photo").addEventListener("change", previewPetPhoto);
 $("#save-pet").addEventListener("click", savePet);
 $("#reset-pet").addEventListener("click", resetPet);
@@ -395,6 +576,7 @@ $("#hero-pet-image").addEventListener("error", () => {
 });
 
 document.addEventListener("visibilitychange", () => {
+  if (EXTENSION_MODE) return;
   if (!state.session || state.session.status !== "running") return;
   if (document.hidden) {
     hiddenAt = Date.now();
@@ -404,13 +586,47 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-if (state.session?.status === "running") {
-  if (remainingMs() <= 0) completeSession();
-  else beginTimer();
-}
-renderPlan();
-render();
+async function initialize() {
+  if (EXTENSION_MODE) {
+    document.title = "Focus Buddy · 完整专注台";
+    $("#edition-label").textContent = "COMPLETE EXTENSION";
+    $("#privacy-pill").textContent = "扩展已连接 · 仅本机";
+    $("#download-link").textContent = "查看项目";
+    $("#hero-intro").textContent =
+      "写下目标，扩展会把场景建议变成本轮网站白名单。即使切换标签页，Luna 也会在后台守住计时和奖励。";
+    $("#use-current-domain").hidden = false;
+    $("#monitor-mode-note").textContent =
+      "扩展只读取当前标签页的域名和标题用于本轮判断；数据保存在浏览器本机。白名单外持续 8 秒才会提醒。";
+    $("#drift-label").textContent = "白名单外";
+    $("footer span").textContent = "Focus Buddy Complete · 专注数据仅保存在扩展本机";
 
-if ("serviceWorker" in navigator) {
+    const fromQuery = normalizeDomain(new URLSearchParams(location.search).get("domain"));
+    const active = await extensionSend("activeTab");
+    initialDomain = fromQuery || normalizeDomain(active?.state?.domain);
+    if (initialDomain) setAllowedDomains([initialDomain]);
+
+    const current = await extensionSend("state");
+    if (current?.ok) {
+      lastExtensionEventId = current.state?.lastEvent?.id || 0;
+      applyExtensionState(current.state);
+      if (state.session?.allowedDomains?.length) {
+        setAllowedDomains(state.session.allowedDomains);
+        domainsTouched = true;
+      }
+      if (state.session?.status === "running" || state.session?.status === "paused") beginTimer();
+    } else {
+      $("#form-message").textContent = "扩展后台没有响应，请在扩展管理页重新加载 Focus Buddy。";
+    }
+  } else if (state.session?.status === "running") {
+    if (remainingMs() <= 0) completeSession();
+    else beginTimer();
+  }
+  renderPlan();
+  render();
+}
+
+initialize();
+
+if (!EXTENSION_MODE && "serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
 }

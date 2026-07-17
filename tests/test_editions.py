@@ -15,12 +15,18 @@ class PublicEditionTests(unittest.TestCase):
         )
         manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest["manifest_version"], 3)
-        self.assertEqual(manifest["version"], "3.3.0")
+        self.assertEqual(manifest["version"], "3.4.0")
         self.assertEqual(
             set(manifest["permissions"]),
             {"storage", "tabs", "alarms", "notifications"},
         )
         self.assertNotIn("host_permissions", manifest)
+        popup = (folder / "popup.js").read_text(encoding="utf-8")
+        background = (folder / "background.js").read_text(encoding="utf-8")
+        self.assertIn('chrome.runtime.getURL("focus.html")', popup)
+        self.assertIn('page.searchParams.set("domain", domain)', popup)
+        self.assertIn("activeTabSummary", background)
+        self.assertIn("lastEvent", background)
 
     def test_web_edition_contains_only_runtime_files(self):
         folder = ROOT / "web_standalone"
@@ -38,6 +44,9 @@ class PublicEditionTests(unittest.TestCase):
         self.assertIn('id="pet-name"', page)
         self.assertIn("compressPetPhoto", script)
         self.assertIn("createNoiseBuffer", script)
+        self.assertIn("EXTENSION_MODE", script)
+        self.assertIn('extensionSend("start"', script)
+        self.assertIn('id="allowed-domains"', page)
 
     def test_readme_explains_three_editions_and_attribution(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -100,6 +109,9 @@ class PublicEditionTests(unittest.TestCase):
         ):
             self.assertIn(name, script)
         self.assertIn("[bool]$IncludeLocalMusic = $false", script)
+        self.assertIn("web_standalone\\index.html", script)
+        self.assertIn("BrowserStage 'focus.html'", script)
+        self.assertIn("$BrowserMedia", script)
 
 
 if __name__ == "__main__":

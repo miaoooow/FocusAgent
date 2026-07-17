@@ -792,7 +792,7 @@ async function refreshState() {
 
 planButton.addEventListener("click", planGoal);
 startButton.addEventListener("click", startSession);
-const currentUIVersion = "3.2.0";
+const currentUIVersion = "3.4.0";
 const savedAIPlanning = localStorage.getItem("focus-ai-planning");
 if (localStorage.getItem("focus-ui-version") !== currentUIVersion) {
   aiPlanToggle.checked = false;

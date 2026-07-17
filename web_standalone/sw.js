@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-buddy-web-3.3.0";
+const CACHE_NAME = "focus-buddy-web-3.4.0";
 const ASSETS = [
   "./",
   "./index.html",

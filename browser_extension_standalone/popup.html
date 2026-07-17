@@ -17,19 +17,17 @@
         <span id="status-pill">待机</span>
       </header>
 
-      <section id="planner">
-        <label for="goal">这一轮要完成什么？</label>
-        <textarea id="goal" maxlength="180" placeholder="例如：30分钟整理完课程资料"></textarea>
-        <div class="row">
-          <label class="small-field">分钟
-            <input id="duration" type="number" min="1" max="240" value="25" />
-          </label>
-          <span class="hint">离开允许网站 8 秒后提醒</span>
+      <section id="launcher">
+        <p class="launcher-kicker">完整网页 + 标签页监督</p>
+        <h2>把专注台开到新标签页</h2>
+        <p class="launcher-copy">
+          完整版包含目标解析、域名白名单、宠物养成、声音花园与跨标签走神提醒。
+        </p>
+        <div class="current-site">
+          <span>当前网站</span>
+          <b id="current-domain">正在识别…</b>
         </div>
-        <label for="domains">允许的网站</label>
-        <textarea id="domains" class="domains" placeholder="每行一个，例如：&#10;github.com&#10;docs.python.org"></textarea>
-        <div id="suggestions" class="suggestions"></div>
-        <button id="start" class="primary">开始专注</button>
+        <button id="open-focus" class="primary">打开完整专注台 <span>→</span></button>
       </section>
 
       <section id="session" hidden>
@@ -41,6 +39,7 @@
           <span>猫币 <b id="coins">0</b></span>
           <span>累计 <b id="total-minutes">0</b> 分钟</span>
         </div>
+        <button id="open-session" class="primary secondary-primary">查看完整专注台</button>
         <div class="actions">
           <button id="pause">暂停</button>
           <button id="stop" class="danger">结束</button>
@@ -48,7 +47,7 @@
       </section>
 
       <p id="message" role="status"></p>
-      <footer>只监督浏览器标签页 · 数据保存在本机</footer>
+      <footer>域名识别与专注数据只保存在本机</footer>
     </main>
     <script src="popup.js"></script>
   </body>

@@ -63,51 +63,22 @@ section {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
 }
 
-label { display: block; margin: 0 0 8px; font-size: 13px; font-weight: 700; }
-
-textarea, input {
-  width: 100%;
-  border: 1px solid rgba(205, 235, 154, 0.17);
-  border-radius: 14px;
-  outline: none;
-  background: rgba(4, 19, 14, 0.7);
-  color: #f7f9ef;
-  font: inherit;
-}
-
-textarea {
-  min-height: 76px;
-  padding: 12px;
-  resize: vertical;
-}
-
-textarea:focus, input:focus {
-  border-color: #c6ed7e;
-  box-shadow: 0 0 0 3px rgba(198, 237, 126, 0.1);
-}
-
-.domains { min-height: 70px; }
-
-.row {
+.launcher-kicker { margin: 0 0 7px; color: #b5d1c0; font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+h2 { margin: 0; font-size: 24px; letter-spacing: -.04em; }
+.launcher-copy { margin: 12px 0 17px; color: #9ab4a4; font-size: 12px; line-height: 1.7; }
+.current-site {
   display: flex;
-  align-items: end;
-  gap: 12px;
-  margin: 13px 0;
-}
-
-.small-field { width: 95px; margin: 0; }
-.small-field input { margin-top: 7px; padding: 10px; }
-.hint { padding-bottom: 9px; color: #9ab5a5; font-size: 11px; }
-
-.suggestions { display: flex; flex-wrap: wrap; gap: 7px; margin: 11px 0 15px; }
-.suggestions button {
-  padding: 6px 9px;
-  border: 1px solid rgba(198, 237, 126, 0.18);
-  border-radius: 999px;
-  background: rgba(198, 237, 126, 0.08);
-  color: #cbe7bd;
+  margin-bottom: 14px;
+  padding: 12px 13px;
+  justify-content: space-between;
+  gap: 15px;
+  border: 1px solid rgba(205, 235, 154, 0.12);
+  border-radius: 13px;
+  background: rgba(4, 19, 14, 0.55);
   font-size: 11px;
 }
+.current-site span { color: #799789; }
+.current-site b { max-width: 220px; overflow: hidden; color: #dff3d2; text-overflow: ellipsis; white-space: nowrap; }
 
 button {
   border: 0;
@@ -123,6 +94,7 @@ button {
   background: #d5f28f;
   color: #173126;
 }
+.primary span { float: right; }
 
 .primary:hover { background: #e4faa9; transform: translateY(-1px); }
 
@@ -147,6 +119,7 @@ button {
 }
 
 .stats b { display: block; margin-top: 4px; color: #f4f8ed; font-size: 14px; }
+.secondary-primary { margin: 4px 0 10px; background: #b9dc7a; }
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
 .actions button { padding: 11px; border-radius: 12px; background: #294a3c; color: #eff8e8; }
 .actions .danger { background: #4d2d2d; color: #ffceca; }

@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '3.3.0',
+    [string]$Version = '3.4.0',
     [bool]$IncludeLocalMusic = $false,
     [switch]$SkipWindowsInstaller
 )
@@ -41,6 +41,22 @@ foreach ($name in $BrowserFiles) {
     Copy-Item -LiteralPath (Join-Path $ProjectRoot "browser_extension_standalone\$name") `
         -Destination (Join-Path $BrowserStage $name)
 }
+
+# The released extension contains the same complete focus console as the
+# no-install web edition. The popup is only a lightweight launcher/status view;
+# the background service worker remains authoritative for cross-tab monitoring.
+Copy-Item -LiteralPath (Join-Path $ProjectRoot 'web_standalone\index.html') `
+    -Destination (Join-Path $BrowserStage 'focus.html')
+foreach ($name in @('styles.css','app.js','manifest.webmanifest')) {
+    Copy-Item -LiteralPath (Join-Path $ProjectRoot "web_standalone\$name") `
+        -Destination (Join-Path $BrowserStage $name)
+}
+$BrowserMedia = Join-Path $BrowserStage 'media'
+New-Item -ItemType Directory -Path $BrowserMedia -Force | Out-Null
+Get-ChildItem -LiteralPath (Join-Path $ProjectRoot 'pictures') -Filter '*.png' -File |
+    ForEach-Object {
+        Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $BrowserMedia $_.Name)
+    }
 
 $WebFiles = @('index.html','styles.css','app.js','manifest.webmanifest','sw.js')
 foreach ($name in $WebFiles) {

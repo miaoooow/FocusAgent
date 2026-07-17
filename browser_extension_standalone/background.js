@@ -12,12 +12,27 @@ const defaultState = () => ({
   pendingViolation: null,
   totalMinutes: 0,
   coins: 0,
-  completedSessions: 0,
+  completed: 0,
+  browser: {
+    currentDomain: "",
+    currentTitle: "",
+    lastWebDomain: "",
+    checkedAt: 0,
+    allowed: true,
+  },
+  lastEvent: null,
 });
 
 async function readState() {
   const stored = await chrome.storage.local.get(STORAGE_KEY);
-  return { ...defaultState(), ...(stored[STORAGE_KEY] || {}) };
+  const saved = stored[STORAGE_KEY] || {};
+  const base = defaultState();
+  return {
+    ...base,
+    ...saved,
+    completed: Number(saved.completed ?? saved.completedSessions ?? 0),
+    browser: { ...base.browser, ...(saved.browser || {}) },
+  };
 }
 
 async function writeState(state) {
@@ -70,9 +85,15 @@ async function finishSession(state) {
   const cleanBonus = state.session.driftCount === 0 ? 5 : 0;
   state.totalMinutes += minutes;
   state.coins += Math.max(2, Math.round(minutes / 5) + cleanBonus - state.session.driftCount * 2);
-  state.completedSessions += 1;
+  state.completed += 1;
   state.session = { ...state.session, status: "finished", finishedAt: Date.now() };
   state.pendingViolation = null;
+  state.lastEvent = {
+    id: Date.now(),
+    type: "complete",
+    title: "Luna 有点骄傲",
+    message: "完成比完美更会养大一只猫。",
+  };
   await chrome.alarms.clear(VIOLATION_ALARM);
   await chrome.alarms.clear(END_ALARM);
   await writeState(state);
@@ -93,6 +114,14 @@ async function evaluateActiveTab() {
 
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
   if (!tab || !tab.url || tab.url.startsWith("chrome-extension://")) {
+    state.browser = {
+      ...state.browser,
+      currentDomain: "Focus Buddy",
+      currentTitle: "完整专注台",
+      checkedAt: Date.now(),
+      allowed: true,
+    };
+    await writeState(state);
     await clearViolation(state);
     return;
   }
@@ -105,7 +134,17 @@ async function evaluateActiveTab() {
     return;
   }
 
-  if (!host || isAllowed(host, session.allowedDomains)) {
+  const allowed = Boolean(host && isAllowed(host, session.allowedDomains));
+  state.browser = {
+    currentDomain: host,
+    currentTitle: String(tab.title || "").slice(0, 120),
+    lastWebDomain: host || state.browser.lastWebDomain,
+    checkedAt: Date.now(),
+    allowed,
+  };
+  await writeState(state);
+
+  if (!host || allowed) {
     await clearViolation(state);
     await chrome.action.setBadgeText({ text: "" });
     return;
@@ -140,16 +179,24 @@ async function confirmViolation() {
 
   session.driftCount += 1;
   state.pendingViolation = null;
-  await writeState(state);
-  await chrome.action.setBadgeBackgroundColor({ color: "#d65b5b" });
-  await chrome.action.setBadgeText({ text: String(Math.min(9, session.driftCount)) });
   const lines = [
     `${host} 今天也没打算替你交作业。`,
     `Luna 看见你绕路了：${host}`,
     `这页很会留人，可你的目标还在等。`,
     `逛得挺丝滑，进度条可没跟上。`,
   ];
-  await showNotification("Focus Buddy · 走神提醒", lines[(session.driftCount - 1) % lines.length]);
+  const message = lines[(session.driftCount - 1) % lines.length];
+  state.lastEvent = {
+    id: Date.now(),
+    type: "drift",
+    host,
+    title: "散步路线挺熟",
+    message,
+  };
+  await writeState(state);
+  await chrome.action.setBadgeBackgroundColor({ color: "#d65b5b" });
+  await chrome.action.setBadgeText({ text: String(Math.min(9, session.driftCount)) });
+  await showNotification("Focus Buddy · 走神提醒", message);
 }
 
 async function startSession(payload) {
@@ -170,8 +217,15 @@ async function startSession(payload) {
     allowedDomains,
     graceSeconds: 8,
     driftCount: 0,
+    tone: String(payload.tone || "funny"),
   };
   state.pendingViolation = null;
+  state.lastEvent = {
+    id: Date.now(),
+    type: "start",
+    title: "Luna 开工了",
+    message: "当前标签页开始由扩展在本机监督。",
+  };
   await writeState(state);
   await chrome.alarms.clear(VIOLATION_ALARM);
   await chrome.alarms.create(END_ALARM, { when: state.session.endAt });
@@ -188,6 +242,12 @@ async function pauseSession() {
     state.pendingViolation = null;
     await chrome.alarms.clear(VIOLATION_ALARM);
     await chrome.alarms.clear(END_ALARM);
+    state.lastEvent = {
+      id: Date.now(),
+      type: "pause",
+      title: "先喘口气",
+      message: "计时和标签页监督都已暂停。",
+    };
     await writeState(state);
   }
   return state;
@@ -199,6 +259,12 @@ async function resumeSession() {
     state.session.endAt = Date.now() + Math.max(1000, state.session.remainingWhenPaused || 1000);
     state.session.remainingWhenPaused = null;
     state.session.status = "running";
+    state.lastEvent = {
+      id: Date.now(),
+      type: "resume",
+      title: "继续就好",
+      message: "扩展已经重新盯住当前标签页。",
+    };
     await writeState(state);
     await chrome.alarms.create(END_ALARM, { when: state.session.endAt });
     await evaluateActiveTab();
@@ -210,10 +276,33 @@ async function stopSession() {
   const state = await readState();
   state.session = null;
   state.pendingViolation = null;
+  state.lastEvent = {
+    id: Date.now(),
+    type: "stop",
+    title: "这轮先收回",
+    message: "下次把目标切小一点，再来一轮。",
+  };
   await chrome.alarms.clear(VIOLATION_ALARM);
   await chrome.alarms.clear(END_ALARM);
   await chrome.action.setBadgeText({ text: "" });
   return writeState(state);
+}
+
+async function activeTabSummary() {
+  const state = await readState();
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  let domain = "";
+  try {
+    if (tab?.url && !tab.url.startsWith("chrome-extension://")) {
+      domain = normalizeDomain(new URL(tab.url).hostname);
+    }
+  } catch {
+    domain = "";
+  }
+  return {
+    domain: domain || state.browser.lastWebDomain || "",
+    title: String(tab?.title || state.browser.currentTitle || "").slice(0, 120),
+  };
 }
 
 chrome.runtime.onInstalled.addListener(async () => {
@@ -238,6 +327,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     pause: pauseSession,
     resume: resumeSession,
     stop: stopSession,
+    activeTab: activeTabSummary,
   };
   const action = actions[message.type];
   if (!action) {

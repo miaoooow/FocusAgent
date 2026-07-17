@@ -1,47 +1,8 @@
 const $ = (selector) => document.querySelector(selector);
-const goalInput = $("#goal");
-const durationInput = $("#duration");
-const domainsInput = $("#domains");
 const message = $("#message");
-
-const domainHints = [
-  { keys: ["代码", "编程", "python", "开发"], domains: ["github.com", "stackoverflow.com", "docs.python.org"] },
-  { keys: ["文档", "报告", "论文"], domains: ["docs.google.com", "office.com", "cnki.net"] },
-  { keys: ["课程", "作业", "学习"], domains: ["bilibili.com", "coursera.org", "icourse163.org"] },
-  { keys: ["设计", "原型"], domains: ["figma.com", "canva.com"] },
-];
 
 function send(type, payload) {
   return chrome.runtime.sendMessage({ type, payload });
-}
-
-function parseDomains() {
-  return domainsInput.value
-    .split(/[\n,，\s]+/)
-    .map((value) => value.trim())
-    .filter(Boolean);
-}
-
-function addDomain(domain) {
-  const current = parseDomains();
-  if (!current.includes(domain)) current.push(domain);
-  domainsInput.value = current.join("\n");
-}
-
-function renderSuggestions() {
-  const goal = goalInput.value.toLowerCase();
-  const matches = domainHints
-    .filter((item) => item.keys.some((key) => goal.includes(key)))
-    .flatMap((item) => item.domains);
-  const unique = [...new Set(matches)].slice(0, 6);
-  $("#suggestions").innerHTML = "";
-  unique.forEach((domain) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = `＋ ${domain}`;
-    button.addEventListener("click", () => addDomain(domain));
-    $("#suggestions").append(button);
-  });
 }
 
 function formatTime(milliseconds) {
@@ -52,7 +13,7 @@ function formatTime(milliseconds) {
 function render(state) {
   const session = state?.session;
   const active = session && ["running", "paused", "finished"].includes(session.status);
-  $("#planner").hidden = Boolean(active);
+  $("#launcher").hidden = Boolean(active);
   $("#session").hidden = !active;
   $("#coins").textContent = state?.coins || 0;
   $("#total-minutes").textContent = state?.totalMinutes || 0;
@@ -73,29 +34,23 @@ function render(state) {
 }
 
 async function refresh() {
-  const response = await send("state");
-  if (response?.ok) render(response.state);
+  const [stateResponse, tabResponse] = await Promise.all([
+    send("state"),
+    send("activeTab"),
+  ]);
+  if (stateResponse?.ok) render(stateResponse.state);
+  const domain = tabResponse?.state?.domain;
+  $("#current-domain").textContent = domain || "浏览器内部页面";
 }
 
-goalInput.addEventListener("input", () => {
-  const match = goalInput.value.match(/(\d{1,3})\s*分钟/);
-  if (match) durationInput.value = Math.min(240, Math.max(1, Number(match[1])));
-  renderSuggestions();
-});
-
-$("#start").addEventListener("click", async () => {
-  message.textContent = "";
-  const response = await send("start", {
-    goal: goalInput.value,
-    durationMinutes: Number(durationInput.value),
-    allowedDomains: parseDomains(),
-  });
-  if (!response?.ok) {
-    message.textContent = response?.error || "暂时无法开始";
-    return;
-  }
-  render(response.state);
-});
+async function openFocusPage() {
+  const tabResponse = await send("activeTab");
+  const domain = tabResponse?.state?.domain || "";
+  const page = new URL(chrome.runtime.getURL("focus.html"));
+  if (domain) page.searchParams.set("domain", domain);
+  await chrome.tabs.create({ url: page.toString() });
+  window.close();
+}
 
 $("#pause").addEventListener("click", async () => {
   const state = (await send("state")).state;
@@ -107,6 +62,9 @@ $("#stop").addEventListener("click", async () => {
   const response = await send("stop");
   if (response?.ok) render(response.state);
 });
+
+$("#open-focus").addEventListener("click", openFocusPage);
+$("#open-session").addEventListener("click", openFocusPage);
 
 refresh();
 setInterval(refresh, 1000);
