@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '3.1.0',
+    [string]$Version = '3.2.0',
     [bool]$IncludeLocalMusic = $true,
     [switch]$SkipWindowsInstaller
 )
@@ -10,10 +10,10 @@ $ReleaseRoot = Join-Path $ProjectRoot 'release'
 $StageRoot = Join-Path $ProjectRoot '.tmp\public-editions'
 $BrowserStage = Join-Path $StageRoot 'FocusBuddy-Browser-Extension'
 $WebStage = Join-Path $StageRoot 'FocusBuddy-Web'
-$BrowserZip = Join-Path $ReleaseRoot "FocusBuddy-Browser-Extension-$Version.zip"
-$WebZip = Join-Path $ReleaseRoot "FocusBuddy-Web-$Version.zip"
-$WindowsInstaller = Join-Path $ReleaseRoot "FocusBuddy-Windows-Setup-$Version.exe"
-$ChecksumFile = Join-Path $ReleaseRoot "SHA256-$Version.txt"
+$BrowserZip = Join-Path $ReleaseRoot 'FocusBuddy-Browser-Extension.zip'
+$WebZip = Join-Path $ReleaseRoot 'FocusBuddy-Web.zip'
+$WindowsInstaller = Join-Path $ReleaseRoot 'FocusBuddy-Windows-Setup.exe'
+$ChecksumFile = Join-Path $ReleaseRoot 'SHA256.txt'
 
 Set-Location $ProjectRoot
 New-Item -ItemType Directory -Path $ReleaseRoot -Force | Out-Null

@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-buddy-web-3.1.0";
+const CACHE_NAME = "focus-buddy-web-3.2.0";
 const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

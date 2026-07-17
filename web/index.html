@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="color-scheme" content="dark">
-  <title>Focus Buddy AI · 本机模型版</title>
+  <title>Focus Buddy · 一键专注版</title>
   <link rel="stylesheet" href="/styles.css?v=7">
 </head>
 <body>
@@ -15,7 +15,7 @@
   <aside class="rail">
     <a class="brand" href="#" aria-label="Focus Buddy 首页">
       <span class="brand-mark"><span></span></span>
-      <span><b>Focus</b><small>Buddy AI / LOCAL</small></span>
+      <span><b>Focus</b><small>Buddy / LOCAL</small></span>
     </a>
 
     <nav class="nav" aria-label="主导航">
@@ -37,7 +37,7 @@
   <main class="main-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">LOCAL AI FOCUS SPACE</p>
+        <p class="eyebrow">LOCAL FOCUS SPACE</p>
         <h1>今天，只推进一件事。</h1>
       </div>
       <div class="top-actions">
@@ -46,7 +46,7 @@
         </button>
           <button id="preview-cat-button" class="preview-cat-button" title="预览桌面小猫提醒">🐾 <span>叫 Luna 出来</span></button>
         <button id="motion-toggle" class="icon-button" title="切换减少动效" aria-label="切换减少动效">≈</button>
-        <span id="ai-model-pill" class="model-pill" data-state="not_checked"><i></i><span id="model-status">本机AI待命</span></span>
+        <span id="ai-model-pill" class="model-pill" data-state="local"><i></i><span id="model-status">本地模式就绪</span></span>
       </div>
     </header>
 
@@ -65,12 +65,12 @@
         </div>
         <div class="plan-action">
           <label class="ai-plan-switch" for="ai-plan-toggle">
-            <input id="ai-plan-toggle" type="checkbox" checked>
+            <input id="ai-plan-toggle" type="checkbox">
             <span><i></i></span>
-            <b>本机 AI 增强</b>
+            <b>本机 AI 增强（可选）</b>
           </label>
           <button id="plan-button" class="primary-button plan-button">
-            <span class="button-orb">✦</span><span>AI解析任务场景</span><b>↗</b>
+            <span class="button-orb">✦</span><span>解析任务场景</span><b>↗</b>
           </button>
         </div>
       </article>

@@ -15,7 +15,7 @@ class PublicEditionTests(unittest.TestCase):
         )
         manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest["manifest_version"], 3)
-        self.assertEqual(manifest["version"], "3.1.0")
+        self.assertEqual(manifest["version"], "3.2.0")
         self.assertEqual(
             set(manifest["permissions"]),
             {"storage", "tabs", "alarms", "notifications"},
@@ -39,13 +39,51 @@ class PublicEditionTests(unittest.TestCase):
             self.assertIn(phrase, readme)
         self.assertIn("YouTube 博主 **mocha.**", readme)
         self.assertIn("声音花园", readme)
+        for asset in (
+            "releases/latest/download/FocusBuddy-Windows-Setup.exe",
+            "releases/latest/download/FocusBuddy-Browser-Extension.zip",
+            "releases/latest/download/FocusBuddy-Web.zip",
+        ):
+            self.assertIn(asset, readme)
         self.assertNotIn(r"D:\Agent", readme)
         self.assertNotIn("设计说明书.docx", readme)
 
     def test_pages_workflow_deploys_only_web_edition(self):
         workflow = (ROOT / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
         self.assertIn("path: web_standalone", workflow)
+        self.assertIn("actions/upload-pages-artifact@v4", workflow)
+        self.assertIn("test -f web_standalone/index.html", workflow)
         self.assertNotIn("path: .", workflow)
+
+    def test_windows_installer_is_per_user_and_one_click(self):
+        installer = (ROOT / "installer" / "FocusBuddy.iss").read_text(encoding="utf-8")
+        for setting in (
+            "PrivilegesRequired=lowest",
+            "DisableWelcomePage=yes",
+            "DisableDirPage=yes",
+            "DisableReadyPage=yes",
+            "DisableFinishedPage=yes",
+            "OutputBaseFilename=FocusBuddy-Windows-Setup",
+        ):
+            self.assertIn(setting, installer)
+        self.assertIn('Name: "{autodesktop}\\{#MyAppName}"', installer)
+        self.assertNotIn("postinstall", installer)
+
+    def test_windows_ui_defaults_to_no_model_required(self):
+        page = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+        self.assertIn("本机 AI 增强（可选）", page)
+        self.assertIn('<input id="ai-plan-toggle" type="checkbox">', page)
+        self.assertNotIn('<input id="ai-plan-toggle" type="checkbox" checked>', page)
+
+    def test_public_artifact_names_are_stable_for_direct_links(self):
+        script = (ROOT / "scripts" / "build_public_editions.ps1").read_text(encoding="utf-8")
+        for name in (
+            "FocusBuddy-Windows-Setup.exe",
+            "FocusBuddy-Browser-Extension.zip",
+            "FocusBuddy-Web.zip",
+            "SHA256.txt",
+        ):
+            self.assertIn(name, script)
 
 
 if __name__ == "__main__":

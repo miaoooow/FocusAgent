@@ -141,8 +141,8 @@ async function planGoal() {
   $("#ai-model-pill").dataset.state = useAI ? "thinking" : "local";
   $("#model-status").textContent = useAI ? "本机AI思考中" : "本地场景库";
   $("#plan-note").textContent = useAI
-    ? "Ollama只负责理解目标；最终权限仍由本地规则校验。"
-    : "使用离线场景数据库，不调用模型。";
+    ? "检测到本机AI时会增强理解；最终权限仍由本地规则校验。"
+    : "无需模型，使用内置场景数据库立即解析。";
   try {
     currentPlan = await api("/api/plan", { goal, use_ai: useAI });
     renderScenes();
@@ -153,7 +153,7 @@ async function planGoal() {
     setSegment("#intensity-control", "intensity", config.roast_intensity);
     $("#plan-source").textContent = `${currentPlan.source} · ${currentPlan.scenes.length}个场景`;
     $("#plan-note").textContent = currentPlan.fallback_reason
-      ? `AI暂时不可用，已由本地场景库接管：${currentPlan.fallback_reason}`
+      ? "本机AI未启用，已自动使用内置场景库，不影响本轮专注。"
       : (currentPlan.detail || "勾选结果是最终白名单；不确定的工具不会偷偷获得权限。");
     $("#model-status").textContent = currentPlan.source;
     $("#ai-model-pill").dataset.state = currentPlan.ai_used ? "ready" : (useAI ? "fallback" : "local");
@@ -340,13 +340,13 @@ function renderAIPlanner(status) {
   const state = status.state || "not_checked";
   pill.dataset.state = state;
   const labels = {
-    not_checked: "本机AI待命",
+    not_checked: "本地模式就绪",
     thinking: "本机AI思考中",
     fallback: "AI离线 · 本地接管",
     local: "本地场景库",
     ready: `本机AI · ${status.model || "Ollama"}`,
   };
-  $("#model-status").textContent = labels[state] || "本机AI待命";
+  $("#model-status").textContent = labels[state] || "本地模式就绪";
 }
 
 function renderProfile(profile) {
@@ -705,17 +705,24 @@ async function refreshState() {
 
 planButton.addEventListener("click", planGoal);
 startButton.addEventListener("click", startSession);
+const currentUIVersion = "3.2.0";
 const savedAIPlanning = localStorage.getItem("focus-ai-planning");
-if (savedAIPlanning !== null) aiPlanToggle.checked = savedAIPlanning !== "false";
+if (localStorage.getItem("focus-ui-version") !== currentUIVersion) {
+  aiPlanToggle.checked = false;
+  localStorage.setItem("focus-ai-planning", "false");
+  localStorage.setItem("focus-ui-version", currentUIVersion);
+} else if (savedAIPlanning !== null) {
+  aiPlanToggle.checked = savedAIPlanning !== "false";
+}
 planButton.querySelectorAll("span")[1].textContent = aiPlanToggle.checked
   ? "AI解析任务场景"
-  : "本地解析任务场景";
+  : "解析任务场景";
 aiPlanToggle.addEventListener("change", () => {
   localStorage.setItem("focus-ai-planning", String(aiPlanToggle.checked));
   currentPlan = null;
   planButton.querySelectorAll("span")[1].textContent = aiPlanToggle.checked
     ? "AI解析任务场景"
-    : "本地解析任务场景";
+    : "解析任务场景";
   $("#plan-source").textContent = aiPlanToggle.checked ? "等待AI解析" : "等待本地解析";
 });
 
