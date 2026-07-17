@@ -64,7 +64,7 @@ try {
     }
 
     $planBody = @{
-        goal = '45分钟完成Python课程作业并运行测试'
+        goal = 'Finish Python coursework and run tests in 45 minutes'
         use_ai = $false
     } |
         ConvertTo-Json -Compress
@@ -78,7 +78,7 @@ try {
     }
 
     $aiBody = @{
-        goal = '35分钟把访谈录音剪成一段播客'
+        goal = 'Edit an interview recording into a podcast in 35 minutes'
         use_ai = $true
     } | ConvertTo-Json -Compress
     $aiPlan = Invoke-RestMethod -Uri "$BaseUrl/api/plan" -Method Post `
@@ -103,7 +103,7 @@ try {
     $photoBytes = [IO.File]::ReadAllBytes((Join-Path $ProjectRoot 'pictures\focus.png'))
     $imageData = 'data:image/png;base64,' + [Convert]::ToBase64String($photoBytes)
     $petBody = @{
-        name = '打包测试伙伴'
+        name = 'SmokeBuddy'
         image = $imageData
     } | ConvertTo-Json -Compress
     $created = Invoke-RestMethod -Uri "$BaseUrl/api/pet/custom/create" -Method Post `
@@ -119,7 +119,7 @@ try {
         throw 'Packaged custom pet growth assets are incomplete'
     }
     $assetResponse = Invoke-WebRequest -Uri ($BaseUrl + $catalogItem.stage_assets[3]) `
-        -TimeoutSec 5
+        -TimeoutSec 5 -UseBasicParsing
     if ($assetResponse.StatusCode -ne 200 -or $assetResponse.RawContentLength -lt 1000) {
         throw 'Packaged custom pet asset could not be served'
     }

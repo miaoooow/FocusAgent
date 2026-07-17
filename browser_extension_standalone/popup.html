@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Focus Buddy</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="brand-cat">🐈</div>
+        <div>
+          <p class="eyebrow">BROWSER FOCUS</p>
+          <h1>Focus Buddy</h1>
+        </div>
+        <span id="status-pill">待机</span>
+      </header>
+
+      <section id="planner">
+        <label for="goal">这一轮要完成什么？</label>
+        <textarea id="goal" maxlength="180" placeholder="例如：30分钟整理完课程资料"></textarea>
+        <div class="row">
+          <label class="small-field">分钟
+            <input id="duration" type="number" min="1" max="240" value="25" />
+          </label>
+          <span class="hint">离开允许网站 8 秒后提醒</span>
+        </div>
+        <label for="domains">允许的网站</label>
+        <textarea id="domains" class="domains" placeholder="每行一个，例如：&#10;github.com&#10;docs.python.org"></textarea>
+        <div id="suggestions" class="suggestions"></div>
+        <button id="start" class="primary">开始专注</button>
+      </section>
+
+      <section id="session" hidden>
+        <p id="session-goal" class="session-goal"></p>
+        <div id="timer" class="timer">25:00</div>
+        <p id="domain-summary" class="domain-summary"></p>
+        <div class="stats">
+          <span>偏航 <b id="drifts">0</b></span>
+          <span>猫币 <b id="coins">0</b></span>
+          <span>累计 <b id="total-minutes">0</b> 分钟</span>
+        </div>
+        <div class="actions">
+          <button id="pause">暂停</button>
+          <button id="stop" class="danger">结束</button>
+        </div>
+      </section>
+
+      <p id="message" role="status"></p>
+      <footer>只监督浏览器标签页 · 数据保存在本机</footer>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

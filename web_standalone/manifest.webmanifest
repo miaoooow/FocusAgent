@@ -1,0 +1,10 @@
+{
+  "name": "Focus Buddy 网页版",
+  "short_name": "Focus Buddy",
+  "description": "免安装的专注计时、任务规划与小猫养成。",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b2119",
+  "theme_color": "#12392c",
+  "lang": "zh-CN"
+}

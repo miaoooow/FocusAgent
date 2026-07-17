@@ -1,55 +1,128 @@
 # Focus Buddy
 
-一款面向 Windows 用户的本地 AI 小猫专注伙伴。
+一款带有小猫养成、幽默提醒和本地 AI 任务规划的专注工具。
 
-写下这一轮要完成的目标，Focus Buddy 会推荐可能需要的软件和页面，帮你建立白名单；当你偏离任务时，小猫会用简短、幽默的方式提醒你。完成专注可以积累成长值、猫币和徽章，把 Luna 慢慢养大。
+Focus Buddy 提供三种使用方式：功能完整的 Windows 安装版、只监督浏览器标签页的扩展版，以及无需安装即可使用的网页版。
 
 ![Focus Buddy 小猫专注场景](pictures/focus.png)
 
-## 主要功能
+> 图片素材来源：YouTube 博主 **mocha.**
 
-- **AI 理解目标**：使用本机 Ollama 分析“40 分钟完成 Python 作业”这类自然语言目标，并推荐相关工具。
-- **断网也能使用**：模型未启动、超时或输出异常时，自动切换到本地场景数据库。
-- **软件与网址白名单**：支持应用、进程、页面关键词和网站域名规则。
-- **小猫桌面提醒**：走神时摇头或推翻杯子，完成后害羞庆祝。
-- **宠物养成**：专注时长会累积成长值、猫币、经验、连续天数和徽章。
-- **自定义宠物**：上传自己的猫、狗或其他宠物照片，在本机生成四个成长阶段。
-- **声音花园**：支持本地 MP3、WAV、OGG 和 M4A，可按雨声、溪流、海岸等类型播放。
-- **隐私优先**：不截屏、不读取按键，不上传宠物照片或专注记录。
+## 选择适合你的版本
 
-## 下载与安装
+| 版本 | 适合谁 | 能监督什么 | AI | 下载/使用 |
+|---|---|---|---|---|
+| Windows 安装版 | 希望使用完整功能的学生和上班族 | Windows 软件、窗口标题、浏览器域名 | 本机 Ollama，可离线回退 | [下载 EXE](https://github.com/miaoooow/Focus-Buddy/releases/latest) |
+| 浏览器扩展版 | 主要在 Edge/Chrome 学习或工作的人 | 当前活动标签页的域名 | 本地规则，不需要模型 | [下载扩展 ZIP](https://github.com/miaoooow/Focus-Buddy/releases/latest) |
+| 网页版 | 想立即体验，不希望安装软件的人 | 是否离开当前网页 | 本地场景规则 | [打开网页版](https://miaoooow.github.io/Focus-Buddy/) |
 
-前往 [Releases](https://github.com/miaoooow/Focus-Buddy/releases/latest) 下载最新版：
+### 能力区别
+
+- **Windows 安装版**功能最完整，可以识别 VS Code、Office、文件资源管理器等桌面软件，显示原生小猫提醒，并支持上传宠物照片。
+- **浏览器扩展版**独立运行，不依赖 EXE；它只读取当前活动标签页的域名，用域名白名单判断是否偏离任务。
+- **网页版**受浏览器安全限制，不能查看其他软件或标签页地址，只能在用户离开当前网页超过宽限时间后记录一次偏航。
+
+三个版本的数据彼此独立，都默认保存在用户自己的设备中。
+
+## 1. Windows 安装版
+
+### 包含的功能
+
+- 使用自然语言输入目标，例如“45 分钟完成高数作业第三章”。
+- 本机 Ollama 解析任务场景并推荐软件、页面或文件工具。
+- AI 不可用时自动切换到 12 类本地场景数据库。
+- 应用、进程、页面关键词和网站域名白名单。
+- VS Code、终端、文件资源管理器等关联软件智能推荐。
+- 小猫走入屏幕、摇头、推翻杯子和完成庆祝动画。
+- 上传自家宠物照片，在本机生成四个成长阶段。
+- 专注分钟、猫币、经验、徽章、连续天数和历史记录。
+- 声音花园、分类播放、音量和播放进度记忆。
+
+### 安装
+
+从 [Releases](https://github.com/miaoooow/Focus-Buddy/releases/latest) 下载：
 
 ```text
-FocusBuddyAI-Setup-3.0.0.exe
+FocusBuddy-Windows-Setup-3.1.0.exe
 ```
 
-双击安装即可。程序只监听本机 `127.0.0.1`，会自动从 8765–8775 中选择一个空闲端口。
+双击安装即可。应用只监听 `127.0.0.1`，并自动从 8765–8775 中选择空闲端口。
 
-Windows 首次运行未签名应用时可能显示 SmartScreen 提示，请核对 Release 中的 SHA-256 校验值后再运行。
+Windows 可能对未签名安装包显示 SmartScreen 提示。运行前可使用 Release 中的 `SHA256-3.1.0.txt` 核对文件。
 
-## 启用本机 AI
+### 启用免费本机 AI
 
-AI 功能不使用收费 API，需要提前安装 [Ollama](https://ollama.com/) 并下载模型：
+Windows 版不使用收费 API。安装 [Ollama](https://ollama.com/) 后执行：
 
 ```powershell
 ollama pull qwen3.5:9b
 ollama list
 ```
 
-推荐模型是 `qwen3.5:9b`。配置较低的电脑也可以使用 `qwen3.5:4b`；如果没有模型，Focus Buddy 会自动使用内置场景库，计时、提醒、养成和白名单功能仍能正常工作。
+推荐模型为 `qwen3.5:9b`。配置较低的电脑可以使用 `qwen3.5:4b`。没有模型时，计时、提醒、白名单和养成功能仍能使用。
 
-## 快速开始
+### 精确识别网站
 
-1. 打开 Focus Buddy。
-2. 输入目标，例如“45 分钟完成高数作业第三章”。
-3. 点击“帮我安排场景”。
-4. 检查推荐的软件和页面，可直接勾选或手动补充。
-5. 点击“开始专注”。
-6. 完成后领取猫币和成长值。
+Windows 程序不能直接读取浏览器地址栏，因此安装目录中附带一个本地网址桥接：
 
-输入目标时尽量包含“时长 + 具体成果”，例如：
+1. Edge 打开 `edge://extensions`，Chrome 打开 `chrome://extensions`。
+2. 开启“开发人员模式”。
+3. 点击“加载解压缩的扩展”。
+4. 选择 Windows 安装目录中的 `browser_extension` 文件夹。
+5. 刷新 Focus Buddy，确认“网址识别桥接”显示已连接。
+
+这个桥接是 Windows 版的配套组件，不是下面的独立浏览器扩展版。
+
+## 2. 浏览器扩展版
+
+浏览器扩展版适合所有工作都在浏览器中完成的用户，不需要运行 Windows EXE。
+
+### 安装
+
+从 [Releases](https://github.com/miaoooow/Focus-Buddy/releases/latest) 下载：
+
+```text
+FocusBuddy-Browser-Extension-3.1.0.zip
+```
+
+解压后：
+
+1. Edge 打开 `edge://extensions`，Chrome 打开 `chrome://extensions`。
+2. 开启“开发人员模式”。
+3. 点击“加载解压缩的扩展”。
+4. 选择刚刚解压的文件夹。
+5. 将 Focus Buddy 固定到浏览器工具栏。
+
+### 使用
+
+1. 输入这一轮目标和专注分钟数。
+2. 每行填写一个允许访问的域名，例如 `github.com`。
+3. 点击“开始专注”。
+4. 离开允许网站 8 秒后，Luna 会显示浏览器通知。
+5. 完成后累计专注分钟、猫币和轮次。
+
+扩展只保存目标、允许域名、计时状态和成长数据，不保存完整 URL 或浏览历史。
+
+## 3. 网页版
+
+打开：
+
+<https://miaoooow.github.io/Focus-Buddy/>
+
+网页版支持：
+
+- 根据目标推荐本地任务场景。
+- 专注倒计时、暂停和提前结束。
+- 离开当前页面超过 8 秒后记录偏航。
+- 清醒值、猫币、完成轮次和 Luna 成长。
+- 由浏览器实时合成的雨幕、溪流和夜风环境声。
+- PWA 离线缓存；浏览器支持时可安装到桌面。
+
+网页版不读取其他标签页域名，也不能判断用户打开了哪个桌面软件。需要严格监督时请选择 Windows 版或浏览器扩展版。
+
+## 目标怎么写更准确
+
+推荐使用“时长 + 具体成果”的格式：
 
 ```text
 30分钟整理完今天的会议纪要
@@ -57,66 +130,56 @@ ollama list
 25分钟修改简历，禁止刷B站和微博
 ```
 
-## 精确识别网站
+Windows 版会调用本机模型理解目标；扩展版和网页版使用内置规则，不会把目标发送到网络。
 
-如果只想允许浏览器中的某个网站，需要加载项目附带的浏览器桥接：
+## 隐私说明
 
-1. Edge 打开 `edge://extensions`，Chrome 打开 `chrome://extensions`。
-2. 开启“开发人员模式”。
-3. 点击“加载解压缩的扩展”。
-4. 选择安装目录中的 `browser_extension` 文件夹。
-5. 刷新 Focus Buddy 页面，确认“网址识别桥接”显示已连接。
+- 不截屏、不录屏、不读取键盘输入。
+- Windows 版只读取当前前台窗口的进程名和窗口标题。
+- 独立扩展版只读取当前活动标签页的域名。
+- Windows 网址桥接只在内存中短暂保留活动域名和标题。
+- 宠物照片、成长记录、白名单和专注历史保存在本机。
+- AI 请求只发送给本机 Ollama。
+- 关闭 Windows 程序或结束扩展会话后即停止监督。
 
-桥接只把当前活动标签页的域名和标题发送到本机 Focus Buddy，不上传完整网址、网页正文或浏览历史。只允许整个 Edge、Chrome 或 Firefox 时不需要安装扩展。
+## 素材来源
 
-## 自定义宠物
+- **图片素材**：YouTube 博主 **mocha.**
+- **音频来源**：以 Windows 版“声音花园”中显示的作者信息为准。
 
-在“成长记录”中上传 PNG、JPG 或 WebP 照片并输入名字。图片只在当前电脑处理，生成内容保存在：
+素材署名仅用于说明来源，不改变原作者享有的权利。公开分发或二次使用前，应确认对应素材的授权范围。
 
-```text
-%LOCALAPPDATA%\FocusBuddyAI\custom_pets
-```
-
-可以在内置小猫和自定义宠物之间切换，也可以删除自己上传的宠物。
-
-## 添加自己的声音
-
-声音花园支持 MP3、WAV、OGG 和 M4A。安装版可从本机用户数据目录读取音频：
+## 项目文件结构
 
 ```text
-%LOCALAPPDATA%\FocusBuddyAI\Musics
+Focus-Buddy/
+├─ app.py                         Windows 版启动入口
+├─ focus_agent/                   计时、监测、AI规划、养成和本地服务
+├─ web/                           Windows 版控制台页面
+├─ browser_extension/             Windows 版网址识别桥接
+├─ browser_extension_standalone/  独立浏览器扩展版
+├─ web_standalone/                独立网页/PWA版
+├─ data/                          场景、软件关系和提醒语句数据库
+├─ assets/                        小猫成长素材
+├─ pictures/                      Windows 版猫咪剧情图片
+├─ installer/                     Windows 安装器配置
+├─ scripts/                       启动、测试和三版本打包脚本
+├─ tests/                         自动化回归测试
+├─ FocusBuddy.spec                Windows EXE资源清单
+└─ README.md                      用户说明
 ```
 
-请只添加自己拥有或有权使用的音频文件。
+以下内容不会上传到 GitHub，也不会进入三个发布包：
 
-## 常见问题
-
-### 页面显示“Failed to fetch”
-
-确认 Focus Buddy 主程序仍在运行，然后重新打开或刷新页面。不要只保留浏览器页面后关闭桌面程序。
-
-### AI 一直显示离线
-
-在 PowerShell 中检查：
-
-```powershell
-ollama list
-Invoke-RestMethod http://127.0.0.1:11434/api/tags
+```text
+.venv/  .runtime/  .tmp/  build/  dist/  docs/  本地设计文档
 ```
 
-如果 Ollama 没有运行，重新启动 Ollama。AI 离线期间不会影响本地专注功能。
+开发测试文件只保留在源码仓库，不会进入用户下载的 EXE、扩展 ZIP 或网页 ZIP。
 
-### 已添加网址却仍被提醒
+## 从源码运行 Windows 版
 
-确认浏览器桥接显示已连接，并将规则类型设为“网站域名”。可以输入 `example.com` 或粘贴完整网址，程序会匹配该域名及其子域名。
-
-### 普通版和 AI 版能同时安装吗？
-
-可以，两者使用不同的数据目录。不建议同时运行，因为浏览器桥接一次只会连接其中一个本地实例。
-
-## 从源码运行
-
-开发环境需要 Windows、Python 3.11+、PowerShell 和可选的 Ollama：
+需要 Windows、Python 3.11+、PowerShell，以及可选的 Ollama：
 
 ```powershell
 git clone https://github.com/miaoooow/Focus-Buddy.git
@@ -133,12 +196,18 @@ $env:PYTHONDONTWRITEBYTECODE='1'
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -v
 ```
 
-## 隐私说明
+## 构建三个发布版本
 
-- 只读取当前前台窗口的进程名和窗口标题。
-- 不截屏、不录屏、不读取键盘输入。
-- 浏览器桥接数据只在内存中短暂保留。
-- 宠物照片、成长记录、白名单记忆和专注历史保存在本机。
-- 关闭程序后即停止监测，不安装后台系统服务。
-- AI 请求只发送给本机 Ollama，不调用云端付费 API。
+```powershell
+.\scripts\build_public_editions.ps1 -Version 3.1.0
+```
+
+脚本只会生成：
+
+```text
+FocusBuddy-Windows-Setup-3.1.0.exe
+FocusBuddy-Browser-Extension-3.1.0.zip
+FocusBuddy-Web-3.1.0.zip
+SHA256-3.1.0.txt
+```
 

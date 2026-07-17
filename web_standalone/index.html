@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#12392c" />
+    <meta name="description" content="Focus Buddy 网页版：免安装的专注计时、任务规划与小猫养成。" />
+    <title>Focus Buddy · 网页版</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#app" aria-label="Focus Buddy 首页">
+        <span class="brand-mark">F</span>
+        <span>
+          <b>Focus Buddy</b>
+          <small>WEB EDITION</small>
+        </span>
+      </a>
+      <div class="top-actions">
+        <span class="privacy-pill">仅保存在浏览器</span>
+        <a href="https://github.com/miaoooow/Focus-Buddy/releases/latest">下载完整版本</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">A QUIET PLACE TO FINISH THINGS</p>
+          <h1>把注意力留给<br /><em>真正想完成的事。</em></h1>
+          <p class="intro">
+            不用安装，不用注册。写下目标，Luna 会替你安排这一轮节奏，
+            在你离开页面太久时轻轻敲一下桌子。
+          </p>
+          <div class="hero-meta">
+            <span>免安装</span><span>本地保存</span><span>离线可用</span>
+          </div>
+        </div>
+        <div class="cat-vignette" aria-label="Luna 小猫">
+          <div class="moon"></div>
+          <div class="css-cat" id="hero-cat">
+            <i class="ear left"></i><i class="ear right"></i>
+            <i class="face"><b class="eye left"></b><b class="eye right"></b><b class="nose"></b></i>
+            <i class="body"></i><i class="tail"></i>
+          </div>
+          <div class="cat-note"><b id="cat-note-title">Luna 已就位</b><span id="cat-note">你负责开始，我负责盯住时间。</span></div>
+        </div>
+      </section>
+
+      <section id="app" class="workspace">
+        <aside class="side-panel">
+          <div class="panel-heading">
+            <span>01</span>
+            <div><p>DEFINE THE WIN</p><h2>这一轮，完成什么？</h2></div>
+          </div>
+          <label class="field-label" for="goal">目标</label>
+          <textarea id="goal" maxlength="180" placeholder="例如：45分钟完成高数作业第三章"></textarea>
+
+          <div class="form-row">
+            <label>
+              <span>专注时长</span>
+              <select id="duration">
+                <option value="15">15 分钟</option>
+                <option value="25" selected>25 分钟</option>
+                <option value="45">45 分钟</option>
+                <option value="60">60 分钟</option>
+                <option value="90">90 分钟</option>
+              </select>
+            </label>
+            <label>
+              <span>提醒风格</span>
+              <select id="tone">
+                <option value="gentle">轻轻敲桌</option>
+                <option value="funny">幽默吐槽</option>
+              </select>
+            </label>
+          </div>
+
+          <div id="plan-result" class="plan-result" aria-live="polite">
+            <p>写下目标后，这里会出现本地场景建议。</p>
+          </div>
+          <button id="start" class="button-primary">开始这一轮 <span>→</span></button>
+          <p id="form-message" class="form-message" role="status"></p>
+        </aside>
+
+        <section class="focus-stage">
+          <div class="stage-top">
+            <div>
+              <p class="eyebrow">CURRENT SESSION</p>
+              <h2 id="session-title">还没有开始</h2>
+            </div>
+            <span id="session-status" class="session-status">待机</span>
+          </div>
+
+          <div class="timer-wrap">
+            <svg viewBox="0 0 220 220" aria-hidden="true">
+              <circle class="timer-track" cx="110" cy="110" r="96"></circle>
+              <circle id="timer-progress" class="timer-progress" cx="110" cy="110" r="96"></circle>
+            </svg>
+            <div>
+              <strong id="timer">25:00</strong>
+              <span id="timer-caption">准备好就开始</span>
+            </div>
+          </div>
+
+          <div class="session-controls">
+            <button id="pause" disabled>暂停</button>
+            <button id="finish" disabled>提前结束</button>
+          </div>
+
+          <div class="session-stats">
+            <div><span>本轮清醒值</span><b id="focus-score">100</b></div>
+            <div><span>离开页面</span><b id="drift-count">0</b></div>
+            <div><span>预计猫币</span><b id="coin-preview">+0</b></div>
+          </div>
+          <div id="event-line" class="event-line">网页版本只判断你是否离开当前页面，不读取其他标签或软件。</div>
+        </section>
+      </section>
+
+      <section class="garden">
+        <div class="section-copy">
+          <p class="eyebrow">SOUND GARDEN</p>
+          <h2>给大脑一点不抢戏的背景。</h2>
+          <p>网页版使用浏览器实时合成环境声，不下载第三方音乐，也不会上传任何内容。</p>
+        </div>
+        <div class="sound-options">
+          <button class="sound-card" data-sound="rain"><span>雨幕</span><small>柔和宽频雨声</small><i></i></button>
+          <button class="sound-card" data-sound="stream"><span>溪流</span><small>清亮流动水声</small><i></i></button>
+          <button class="sound-card" data-sound="wind"><span>夜风</span><small>低频缓慢呼吸</small><i></i></button>
+          <button id="sound-stop" class="sound-card stop"><span>静音</span><small>把房间还给安静</small><i></i></button>
+        </div>
+      </section>
+
+      <section class="growth">
+        <div>
+          <p class="eyebrow">LUNA'S GROWTH</p>
+          <h2>专注时间，会留下看得见的痕迹。</h2>
+        </div>
+        <div class="growth-card">
+          <div class="growth-stats">
+            <div><b id="total-minutes">0</b><span>累计分钟</span></div>
+            <div><b id="coins">0</b><span>猫币</span></div>
+            <div><b id="completed">0</b><span>完成轮次</span></div>
+          </div>
+          <div class="growth-line">
+            <div id="growth-fill"></div>
+          </div>
+          <p><b id="growth-stage">刚到家的幼猫</b><span id="growth-next">再专注 60 分钟，Luna 会开始认主。</span></p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Focus Buddy Web · 数据仅保存在当前浏览器</span>
+      <a href="https://github.com/miaoooow/Focus-Buddy">GitHub</a>
+    </footer>
+    <script src="app.js"></script>
+  </body>
+</html>
