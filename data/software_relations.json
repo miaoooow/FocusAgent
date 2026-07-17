@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "applications": {
+    "code.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "浏览、拖入或打开项目文件", "confidence": 0.98, "soft_grace_seconds": 90},
+      {"process": "windowsterminal.exe", "label": "终端", "reason": "运行项目、测试或安装依赖", "confidence": 0.98, "soft_grace_seconds": 120},
+      {"process": "powershell.exe", "label": "PowerShell", "reason": "执行开发命令", "confidence": 0.97, "soft_grace_seconds": 120},
+      {"process": "cmd.exe", "label": "命令提示符", "reason": "执行开发命令", "confidence": 0.95, "soft_grace_seconds": 120},
+      {"process": "notepad.exe", "label": "记事本", "reason": "临时查看或编辑文本文件", "confidence": 0.88, "soft_grace_seconds": 60},
+      {"process": "notepad++.exe", "label": "Notepad++", "reason": "查看或编辑项目文本", "confidence": 0.95, "soft_grace_seconds": 90},
+      {"process": "git-bash.exe", "label": "Git Bash", "reason": "提交代码或执行Git命令", "confidence": 0.97, "soft_grace_seconds": 120},
+      {"process": "msedge.exe", "label": "开发文档页面", "reason": "查阅文档、仓库或错误信息", "confidence": 0.84, "soft_grace_seconds": 60, "title_keywords": ["docs", "documentation", "github", "stackoverflow", "developer", "文档"]},
+      {"process": "chrome.exe", "label": "开发文档页面", "reason": "查阅文档、仓库或错误信息", "confidence": 0.84, "soft_grace_seconds": 60, "title_keywords": ["docs", "documentation", "github", "stackoverflow", "developer", "文档"]}
+    ],
+    "winword.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "选择文档、图片或附件", "confidence": 0.97, "soft_grace_seconds": 90},
+      {"process": "acrord32.exe", "label": "PDF阅读器", "reason": "查看参考资料", "confidence": 0.96, "soft_grace_seconds": 120},
+      {"process": "snippingtool.exe", "label": "截图工具", "reason": "截取报告所需素材", "confidence": 0.90, "soft_grace_seconds": 60}
+    ],
+    "wps.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "选择文档、图片或附件", "confidence": 0.97, "soft_grace_seconds": 90},
+      {"process": "acrord32.exe", "label": "PDF阅读器", "reason": "查看参考资料", "confidence": 0.96, "soft_grace_seconds": 120},
+      {"process": "snippingtool.exe", "label": "截图工具", "reason": "截取报告所需素材", "confidence": 0.90, "soft_grace_seconds": 60}
+    ],
+    "powerpnt.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "插入图片、视频或资料", "confidence": 0.98, "soft_grace_seconds": 90},
+      {"process": "photoshop.exe", "label": "Photoshop", "reason": "处理演示所需图片", "confidence": 0.94, "soft_grace_seconds": 120},
+      {"process": "snippingtool.exe", "label": "截图工具", "reason": "制作演示截图", "confidence": 0.94, "soft_grace_seconds": 60}
+    ],
+    "wpp.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "插入图片、视频或资料", "confidence": 0.98, "soft_grace_seconds": 90},
+      {"process": "photoshop.exe", "label": "Photoshop", "reason": "处理演示所需图片", "confidence": 0.94, "soft_grace_seconds": 120},
+      {"process": "snippingtool.exe", "label": "截图工具", "reason": "制作演示截图", "confidence": 0.94, "soft_grace_seconds": 60}
+    ],
+    "excel.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "导入或导出数据文件", "confidence": 0.97, "soft_grace_seconds": 90},
+      {"process": "notepad.exe", "label": "记事本", "reason": "快速检查CSV或文本数据", "confidence": 0.90, "soft_grace_seconds": 60},
+      {"process": "pbidesktop.exe", "label": "Power BI", "reason": "继续分析或可视化数据", "confidence": 0.96, "soft_grace_seconds": 120}
+    ],
+    "et.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "导入或导出数据文件", "confidence": 0.97, "soft_grace_seconds": 90},
+      {"process": "notepad.exe", "label": "记事本", "reason": "快速检查CSV或文本数据", "confidence": 0.90, "soft_grace_seconds": 60}
+    ],
+    "photoshop.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "浏览素材和导出文件", "confidence": 0.98, "soft_grace_seconds": 90},
+      {"process": "illustrator.exe", "label": "Illustrator", "reason": "配合处理矢量素材", "confidence": 0.92, "soft_grace_seconds": 120}
+    ],
+    "acrord32.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "打开同一资料夹中的文件", "confidence": 0.94, "soft_grace_seconds": 60},
+      {"process": "winword.exe", "label": "Word", "reason": "摘录和整理阅读笔记", "confidence": 0.90, "soft_grace_seconds": 90},
+      {"process": "wps.exe", "label": "WPS文字", "reason": "摘录和整理阅读笔记", "confidence": 0.90, "soft_grace_seconds": 90}
+    ],
+    "devenv.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "浏览解决方案文件和构建产物", "confidence": 0.98, "soft_grace_seconds": 90},
+      {"process": "windowsterminal.exe", "label": "终端", "reason": "运行构建、测试或版本控制命令", "confidence": 0.97, "soft_grace_seconds": 120},
+      {"process": "msedge.exe", "label": "开发文档页面", "reason": "查阅微软文档、仓库或错误信息", "confidence": 0.85, "soft_grace_seconds": 60, "title_keywords": ["microsoft learn", "documentation", "github", "stackoverflow", "文档"]}
+    ],
+    "pycharm64.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "浏览项目文件、数据或导出结果", "confidence": 0.97, "soft_grace_seconds": 90},
+      {"process": "windowsterminal.exe", "label": "终端", "reason": "运行Python、测试或依赖命令", "confidence": 0.97, "soft_grace_seconds": 120},
+      {"process": "chrome.exe", "label": "Python文档页面", "reason": "查阅文档、仓库或报错信息", "confidence": 0.84, "soft_grace_seconds": 60, "title_keywords": ["python", "pypi", "github", "stackoverflow", "docs", "文档"]}
+    ],
+    "idea64.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "浏览项目文件和构建产物", "confidence": 0.97, "soft_grace_seconds": 90},
+      {"process": "windowsterminal.exe", "label": "终端", "reason": "运行构建、测试或Git命令", "confidence": 0.97, "soft_grace_seconds": 120},
+      {"process": "chrome.exe", "label": "开发文档页面", "reason": "查阅Java文档、仓库或报错信息", "confidence": 0.84, "soft_grace_seconds": 60, "title_keywords": ["java", "maven", "gradle", "github", "stackoverflow", "docs", "文档"]}
+    ],
+    "notepad++.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "打开同一项目中的其他文本文件", "confidence": 0.96, "soft_grace_seconds": 75},
+      {"process": "windowsterminal.exe", "label": "终端", "reason": "处理文本、脚本或配置文件", "confidence": 0.90, "soft_grace_seconds": 90}
+    ],
+    "obsidian.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "管理笔记附件和资料目录", "confidence": 0.96, "soft_grace_seconds": 90},
+      {"process": "acrord32.exe", "label": "PDF阅读器", "reason": "阅读并摘录参考资料", "confidence": 0.95, "soft_grace_seconds": 120},
+      {"process": "chrome.exe", "label": "研究资料页面", "reason": "查阅与笔记主题相关的资料", "confidence": 0.78, "soft_grace_seconds": 60, "title_keywords": ["docs", "paper", "research", "文档", "论文", "百科"]}
+    ],
+    "matlab.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "打开脚本、数据集或导出结果", "confidence": 0.98, "soft_grace_seconds": 90},
+      {"process": "excel.exe", "label": "Excel", "reason": "查看或整理计算数据", "confidence": 0.92, "soft_grace_seconds": 120},
+      {"process": "acrord32.exe", "label": "PDF阅读器", "reason": "查看公式、论文或课程资料", "confidence": 0.90, "soft_grace_seconds": 120}
+    ],
+    "figma.exe": [
+      {"process": "explorer.exe", "label": "文件资源管理器", "reason": "导入图片、图标或导出设计稿", "confidence": 0.97, "soft_grace_seconds": 90},
+      {"process": "photoshop.exe", "label": "Photoshop", "reason": "处理位图素材", "confidence": 0.94, "soft_grace_seconds": 120},
+      {"process": "illustrator.exe", "label": "Illustrator", "reason": "处理矢量素材", "confidence": 0.94, "soft_grace_seconds": 120}
+    ]
+  }
+}

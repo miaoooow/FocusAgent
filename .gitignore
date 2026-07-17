@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+.tmp/
+.runtime/
+build/
+dist/
+release/
+Musics/
+*.ncm
+*.lrc
+AI_VERSION_INFO.md
+BACKUP_INFO.md
+docs/
+scripts/build_agent_design_doc.py
+focus_agent/app.py

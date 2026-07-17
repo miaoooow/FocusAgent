@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "scenarios": [
+    {
+      "id": "coding",
+      "name": "编程与开发",
+      "description": "编辑代码、管理项目文件并运行测试",
+      "priority": 100,
+      "strong_keywords": ["python", "java", "c++", "javascript", "typescript", "编程", "写代码", "代码", "开发", "调试", "debug", "算法题", "爬虫", "接口开发", "前端", "后端"],
+      "weak_keywords": ["项目", "程序", "脚本", "测试", "接口", "bug", "运行"],
+      "negative_keywords": ["只看课程", "观看教程"],
+      "targets": [
+        {"kind": "process", "value": "Code.exe", "match": "exact"},
+        {"kind": "process", "value": "WindowsTerminal.exe", "match": "exact"},
+        {"kind": "process", "value": "explorer.exe", "match": "exact"}
+      ]
+    },
+    {
+      "id": "writing",
+      "name": "文档写作",
+      "description": "撰写正文、查阅资料并管理附件",
+      "priority": 76,
+      "exclusive_group": "document-output",
+      "strong_keywords": ["论文", "实验报告", "课程报告", "周报", "简历", "策划案", "文案", "写作", "写报告", "word", "wps文字"],
+      "weak_keywords": ["撰写", "初稿", "修改文档", "排版", "正文", "方案"],
+      "negative_keywords": ["ppt", "演示文稿", "幻灯片"],
+      "targets": [
+        {"kind": "process", "value": "WINWORD.EXE", "match": "exact"},
+        {"kind": "process", "value": "wps.exe", "match": "exact"},
+        {"kind": "process", "value": "explorer.exe", "match": "exact"},
+        {"kind": "process", "value": "AcroRd32.exe", "match": "exact"}
+      ]
+    },
+    {
+      "id": "presentation",
+      "name": "演示与答辩",
+      "description": "制作幻灯片、整理素材并预览展示",
+      "priority": 110,
+      "exclusive_group": "document-output",
+      "strong_keywords": ["ppt", "powerpoint", "演示文稿", "幻灯片", "路演", "答辩", "汇报展示", "汇报ppt"],
+      "weak_keywords": ["演示", "展示", "汇报", "讲稿"],
+      "negative_keywords": [],
+      "targets": [
+        {"kind": "process", "value": "POWERPNT.EXE", "match": "exact"},
+        {"kind": "process", "value": "wpp.exe", "match": "exact"},
+        {"kind": "process", "value": "explorer.exe", "match": "exact"}
+      ]
+    },
+    {
+      "id": "spreadsheet",
+      "name": "表格与数据",
+      "description": "整理数据、计算并制作表格",
+      "priority": 90,
+      "strong_keywords": ["excel", "表格", "报表", "数据清洗", "数据统计", "数据分析", "透视表", "财务表", "csv"],
+      "weak_keywords": ["统计", "计算数据", "整理数据", "可视化"],
+      "negative_keywords": [],
+      "targets": [
+        {"kind": "process", "value": "EXCEL.EXE", "match": "exact"},
+        {"kind": "process", "value": "et.exe", "match": "exact"},
+        {"kind": "process", "value": "explorer.exe", "match": "exact"}
+      ]
+    },
+    {
+      "id": "study",
+      "name": "课程与练习",
+      "description": "完成习题、查看讲义并使用计算工具",
+      "priority": 70,
+      "strong_keywords": ["高数", "线性代数", "概率论", "数学", "物理", "化学", "生物", "会计", "经济学", "刷题", "习题", "作业", "备考", "复习"],
+      "weak_keywords": ["第三章", "课程", "考试", "练习", "题目", "学习"],
+      "negative_keywords": ["编程作业", "代码作业", "实验报告"],
+      "targets": [
+        {"kind": "process", "value": "AcroRd32.exe", "match": "exact"},
+        {"kind": "process", "value": "CalculatorApp.exe", "match": "exact"}
+      ]
+    },
+    {
+      "id": "research",
+      "name": "阅读与研究",
+      "description": "阅读论文、PDF和可信参考资料",
+      "priority": 72,
+      "strong_keywords": ["阅读文献", "论文阅读", "文献综述", "查文献", "知网", "阅读pdf", "读完", "看书", "研究资料"],
+      "weak_keywords": ["阅读", "文献", "资料", "pdf", "查资料", "参考"],
+      "negative_keywords": [],
+      "targets": [
+        {"kind": "process", "value": "AcroRd32.exe", "match": "exact"},
+        {"kind": "window_title", "value": "文献", "match": "contains"}
+      ]
+    },
+    {
+      "id": "notes",
+      "name": "笔记与知识库",
+      "description": "整理笔记、知识卡片和资料索引",
+      "priority": 78,
+      "strong_keywords": ["整理笔记", "记笔记", "知识库", "obsidian", "notion", "onenote", "语雀"],
+      "weak_keywords": ["笔记", "摘录", "知识卡片", "复盘"],
+      "negative_keywords": [],
+      "targets": [
+        {"kind": "process", "value": "Obsidian.exe", "match": "exact"},
+        {"kind": "process", "value": "ONENOTE.EXE", "match": "exact"},
+        {"kind": "window_title", "value": "Notion", "match": "contains"},
+        {"kind": "process", "value": "explorer.exe", "match": "exact"}
+      ]
+    },
+    {
+      "id": "design",
+      "name": "设计与原型",
+      "description": "制作界面、海报和视觉素材",
+      "priority": 88,
+      "strong_keywords": ["ui设计", "ux设计", "figma", "原型设计", "海报", "封面设计", "修图", "photoshop", "视觉设计"],
+      "weak_keywords": ["设计稿", "界面", "素材", "配图"],
+      "negative_keywords": [],
+      "targets": [
+        {"kind": "window_title", "value": "Figma", "match": "contains"},
+        {"kind": "process", "value": "Photoshop.exe", "match": "exact"},
+        {"kind": "process", "value": "explorer.exe", "match": "exact"}
+      ]
+    },
+    {
+      "id": "video",
+      "name": "视频与音频制作",
+      "description": "剪辑素材、处理声音并导出作品",
+      "priority": 86,
+      "strong_keywords": ["剪视频", "剪辑视频", "视频剪辑", "pr剪辑", "premiere", "剪映", "达芬奇", "音频剪辑", "播客剪辑"],
+      "weak_keywords": ["剪辑", "课程视频", "字幕", "导出视频", "配音"],
+      "negative_keywords": ["观看视频"],
+      "targets": [
+        {"kind": "process", "value": "Adobe Premiere Pro.exe", "match": "exact"},
+        {"kind": "process", "value": "JianyingPro.exe", "match": "exact"},
+        {"kind": "process", "value": "explorer.exe", "match": "exact"}
+      ]
+    },
+    {
+      "id": "meeting",
+      "name": "会议与协作",
+      "description": "参加线上会议并记录待办",
+      "priority": 82,
+      "strong_keywords": ["线上会议", "视频会议", "腾讯会议", "zoom会议", "teams会议", "飞书会议"],
+      "weak_keywords": ["开会", "会议纪要", "远程沟通"],
+      "negative_keywords": [],
+      "targets": [
+        {"kind": "process", "value": "wemeetapp.exe", "match": "exact"},
+        {"kind": "process", "value": "Zoom.exe", "match": "exact"},
+        {"kind": "process", "value": "ms-teams.exe", "match": "exact"}
+      ]
+    },
+    {
+      "id": "email",
+      "name": "邮件与沟通",
+      "description": "处理邮件、附件和工作消息",
+      "priority": 65,
+      "strong_keywords": ["处理邮件", "回复邮件", "写邮件", "outlook", "整理邮箱"],
+      "weak_keywords": ["邮件", "收件箱", "附件"],
+      "negative_keywords": [],
+      "targets": [
+        {"kind": "process", "value": "OUTLOOK.EXE", "match": "exact"},
+        {"kind": "process", "value": "explorer.exe", "match": "exact"}
+      ]
+    },
+    {
+      "id": "language",
+      "name": "语言学习",
+      "description": "背词、听力、阅读和口语练习",
+      "priority": 68,
+      "strong_keywords": ["背单词", "英语听力", "口语练习", "雅思", "托福", "四六级", "翻译练习", "日语学习"],
+      "weak_keywords": ["英语", "单词", "听力", "口语", "翻译"],
+      "negative_keywords": [],
+      "targets": [
+        {"kind": "process", "value": "AcroRd32.exe", "match": "exact"},
+        {"kind": "window_title", "value": "词典", "match": "contains"}
+      ]
+    }
+  ]
+}

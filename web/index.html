@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="dark">
+  <title>Focus Buddy AI · 本机模型版</title>
+  <link rel="stylesheet" href="/styles.css?v=7">
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <aside class="rail">
+    <a class="brand" href="#" aria-label="Focus Buddy 首页">
+      <span class="brand-mark"><span></span></span>
+      <span><b>Focus</b><small>Buddy AI / LOCAL</small></span>
+    </a>
+
+    <nav class="nav" aria-label="主导航">
+      <button class="nav-item active" data-view="focus"><span>◉</span>本轮专注</button>
+      <button class="nav-item" data-view="ambience"><span>♫</span>声音花园</button>
+      <button class="nav-item" data-view="growth"><span>↗</span>成长记录</button>
+    </nav>
+
+    <div class="rail-pet">
+      <div class="rail-cat-mask"><img id="rail-cat-image" src="/assets/cat-story-skins/orange-young-v2.png" alt="你的专注小猫"></div>
+          <div><b id="rail-cat-name">Luna</b><small id="rail-cat-stage">刚到家的幼猫</small></div>
+    </div>
+    <div class="rail-foot">
+      <span class="live-dot"></span>
+      <span id="service-copy">本地监测已连接</span>
+    </div>
+  </aside>
+
+  <main class="main-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">LOCAL AI FOCUS SPACE</p>
+        <h1>今天，只推进一件事。</h1>
+      </div>
+      <div class="top-actions">
+        <button id="sound-quick-toggle" class="sound-quick-toggle" type="button" data-playing="false" title="播放或暂停白噪音">
+          <span class="sound-pulse"><i></i><i></i><i></i></span><b id="sound-quick-label">白噪音</b>
+        </button>
+          <button id="preview-cat-button" class="preview-cat-button" title="预览桌面小猫提醒">🐾 <span>叫 Luna 出来</span></button>
+        <button id="motion-toggle" class="icon-button" title="切换减少动效" aria-label="切换减少动效">≈</button>
+        <span id="ai-model-pill" class="model-pill" data-state="not_checked"><i></i><span id="model-status">本机AI待命</span></span>
+      </div>
+    </header>
+
+    <section id="focus-view" class="view active">
+      <article class="goal-card enter-card">
+        <div class="goal-number">01</div>
+        <div class="goal-main">
+          <label for="goal-input">你结束这一轮时，想看到什么结果？</label>
+          <textarea id="goal-input" rows="2" maxlength="300" placeholder="例如：XX分钟完成XXX项目（也可以写上需要使用的软件）"></textarea>
+          <div class="quick-goals" aria-label="快速目标">
+            <button data-goal="完成今天的课程作业">课程作业</button>
+            <button data-goal="完成今天的编程任务并跑通测试">跑通代码</button>
+            <button data-goal="完成并提交本周周报">提交周报</button>
+            <button data-goal="完成汇报PPT初稿">做完PPT</button>
+          </div>
+        </div>
+        <div class="plan-action">
+          <label class="ai-plan-switch" for="ai-plan-toggle">
+            <input id="ai-plan-toggle" type="checkbox" checked>
+            <span><i></i></span>
+            <b>本机 AI 增强</b>
+          </label>
+          <button id="plan-button" class="primary-button plan-button">
+            <span class="button-orb">✦</span><span>AI解析任务场景</span><b>↗</b>
+          </button>
+        </div>
+      </article>
+
+      <div class="workspace-grid">
+        <section class="plan-panel enter-card delay-1">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">SMART PLAN</p>
+              <h2>可能会用到的场景</h2>
+            </div>
+            <span id="plan-source" class="quiet-pill">等待解析</span>
+          </div>
+
+          <div id="scene-list" class="scene-list empty-scenes">
+            <div class="empty-state">
+              <span>✦</span>
+              <p>写好目标后，我会把主任务、资料和工具拆开。</p>
+            </div>
+          </div>
+
+          <div class="custom-target-row">
+            <select id="custom-target-kind" aria-label="补充类型">
+              <option value="window_title">页面关键词</option>
+              <option value="domain">网站域名</option>
+              <option value="app">应用名称</option>
+              <option value="process">进程名称</option>
+            </select>
+            <input id="custom-target-value" maxlength="100" placeholder="补充软件或页面，例如：Notion / Code.exe">
+            <button id="add-target-button">＋ 加入</button>
+          </div>
+
+          <div id="browser-bridge-card" class="browser-bridge-card" data-connected="false">
+            <span class="bridge-orb">◎</span>
+            <div>
+              <b id="browser-bridge-title">具体网址识别未启用</b>
+              <p id="browser-bridge-copy">只限制整个浏览器不需要安装；要区分浏览器里的具体网站，才需要一次安装本地桥接。</p>
+              <small>Edge：扩展 → 开发人员模式 → 加载解压缩扩展</small>
+            </div>
+            <button id="copy-extension-path" type="button">复制安装位置</button>
+          </div>
+
+          <div class="control-block">
+            <span class="control-label">监测方式</span>
+            <div class="segmented" id="mode-control">
+              <button class="active" data-mode="whitelist">只用这些</button>
+              <button data-mode="blacklist">避开这些</button>
+              <button data-mode="blackout">完全离屏</button>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-block grow">
+              <span class="control-label">本轮时长</span>
+              <div class="duration-row" id="duration-control">
+                <button data-minutes="25">25</button>
+                <button class="active" data-minutes="45">45</button>
+                <button data-minutes="60">60</button>
+                <button data-minutes="90">90</button>
+                <label><input id="custom-duration" type="number" min="1" max="480" value="45"><span>min</span></label>
+              </div>
+            </div>
+            <div class="control-block">
+              <span class="control-label">提醒语气</span>
+              <div class="mini-segmented" id="intensity-control">
+                <button class="active" data-intensity="mild">机灵</button>
+                <button data-intensity="spicy">有点狠</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="plan-footer">
+            <p id="plan-note">建议只是一份草案，你随时可以取消勾选。</p>
+            <button id="start-button" class="start-button"><span>开始这一轮</span><b>→</b></button>
+          </div>
+        </section>
+
+        <aside id="session-panel" class="session-panel enter-card delay-2">
+          <div class="session-glow"></div>
+          <div class="session-top">
+            <span id="session-state-pill" class="state-pill">NOT STARTED</span>
+            <span id="alert-count">0 次偏航</span>
+          </div>
+
+          <div class="timer-wrap">
+            <svg class="timer-ring" viewBox="0 0 240 240" aria-hidden="true">
+              <circle class="ring-track" cx="120" cy="120" r="96"></circle>
+              <circle id="ring-progress" class="ring-progress" cx="120" cy="120" r="96"></circle>
+            </svg>
+            <div class="timer-copy">
+              <strong id="timer-text">45:00</strong>
+              <span>REMAINING</span>
+            </div>
+          </div>
+
+          <div id="cat-story" class="cat-story" data-story="idle" aria-live="polite">
+            <img id="cat-story-image" class="story-scene-image" src="/media/picture/relax.png" alt="小猫安静地陪伴专注">
+            <img id="cat-story-head" class="story-head-layer" src="/media/picture/relax.png" alt="" aria-hidden="true">
+            <div class="story-action" aria-hidden="true">
+              <span class="story-paw-swipe"></span>
+              <span class="story-cup"></span>
+              <span class="story-blush story-blush-left"></span>
+              <span class="story-blush story-blush-right"></span>
+            </div>
+            <div class="story-shade"></div>
+            <div class="story-fx" aria-hidden="true"><i></i><i></i><i></i><b>!</b></div>
+            <div class="story-caption">
+              <span id="story-kicker">CAT CAM · RESTING</span>
+                  <p id="cat-line">Luna 正在假装不在意你。</p>
+            </div>
+          </div>
+
+          <div id="penalty-panel" class="penalty-panel" data-grade="S">
+            <div><span>本轮清醒值</span><strong><b id="focus-score">100</b><small>/100</small></strong></div>
+            <div class="focus-score-track"><i id="focus-score-bar"></i></div>
+            <p><span id="penalty-copy">第一次偏航：清醒值 -8，预计少 2 猫币</span><b id="focus-grade">S</b></p>
+          </div>
+
+          <div class="session-context">
+            <span>当前窗口</span>
+            <strong id="current-window">等待开始</strong>
+            <small id="smart-status">关联工具会先智能缓冲，不会立刻打扰。</small>
+          </div>
+
+          <div id="smart-suggestion" class="smart-suggestion" hidden></div>
+
+          <div class="session-actions">
+            <button id="pause-button" disabled>暂停</button>
+            <button id="stop-button" disabled>结束</button>
+          </div>
+        </aside>
+      </div>
+
+      <section class="reward-strip enter-card delay-3">
+        <div class="reward-intro">
+          <p class="eyebrow">LONG GAME</p>
+          <h2>把认真，养成看得见的东西。</h2>
+        </div>
+        <div class="metric"><span>连续</span><strong id="streak-metric">0</strong><small>天</small></div>
+        <div class="metric"><span>累计</span><strong id="minutes-metric">0</strong><small>分钟</small></div>
+        <div class="metric accent"><span>猫币</span><strong id="coins-metric">0</strong><small>枚</small></div>
+        <div class="reward-rule"><b>奖惩规则</b><span>每次偏航立即降低本轮清醒值，并减少待结算猫币与XP；历史成长永不倒扣。</span></div>
+      </section>
+    </section>
+
+    <section id="ambience-view" class="view">
+      <div class="ambience-hero enter-card">
+        <div class="ambience-copy">
+          <p class="eyebrow">LOCAL SOUND GARDEN</p>
+          <h2>给注意力，留一层柔软的背景。</h2>
+          <p>选择雨幕、溪流、海岸或鸟鸣，让小猫替你守住这一段节奏。</p>
+        </div>
+        <div class="sound-visual" data-playing="false">
+          <img src="/media/picture/relax.png" alt="小猫在绿色环境中放松">
+          <div class="sound-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="now-breathing"><span></span><b>慢一点，也是在前进</b></div>
+        </div>
+      </div>
+
+      <div class="ambience-grid">
+        <aside class="sound-categories enter-card delay-1">
+          <div class="section-head">
+            <div><p class="eyebrow">MOOD FILTER</p><h2>选择环境</h2></div>
+          </div>
+          <div id="sound-category-list" class="sound-category-list">
+            <button class="active" data-sound-category="all"><i>⌘</i><span><b>全部声音</b><small>浏览本地声音库</small></span><em>0</em></button>
+          </div>
+        </aside>
+
+        <section class="sound-library enter-card delay-2">
+          <div class="section-head sound-library-head">
+            <div><p class="eyebrow">CURATED LOCALLY</p><h2 id="sound-library-title">全部声音</h2></div>
+            <span id="sound-result-count" class="quiet-pill">0 TRACKS</span>
+          </div>
+          <div id="sound-track-list" class="sound-track-list"></div>
+        </section>
+      </div>
+
+      <section id="sound-player" class="sound-player enter-card delay-3" data-playing="false">
+        <div class="player-cover"><img id="player-cover-image" src="/media/picture/relax.png" alt="当前白噪音场景"></div>
+        <div class="player-now">
+          <span>NOW PLAYING</span>
+          <strong id="player-track-title">先选择一种声音</strong>
+          <small id="player-track-artist">本地声音花园</small>
+        </div>
+        <div class="player-controls">
+          <button id="sound-prev" type="button" aria-label="上一首">←</button>
+          <button id="sound-play" class="sound-play" type="button" aria-label="播放">▶</button>
+          <button id="sound-next" type="button" aria-label="下一首">→</button>
+        </div>
+        <div class="player-timeline">
+          <span id="sound-current-time">00:00</span>
+          <input id="sound-progress" type="range" min="0" max="1000" value="0" aria-label="播放进度">
+          <span id="sound-duration">00:00</span>
+        </div>
+        <label class="volume-control" for="sound-volume"><span>VOL</span><input id="sound-volume" type="range" min="0" max="100" value="38"></label>
+      </section>
+      <audio id="ambient-audio" preload="metadata" loop></audio>
+    </section>
+
+    <section id="growth-view" class="view">
+      <div class="growth-hero pet-home enter-card">
+        <div class="pet-copy">
+          <p class="eyebrow">YOUR FOCUS PET</p>
+          <p class="pet-kicker">你专注，它长大。</p>
+                  <h2><span id="pet-name-heading">Luna</span><br><em id="pet-stage-title">刚到家的幼猫</em></h2>
+          <p id="pet-mood" class="pet-mood">等着第一顿专注猫粮，也等着认识你。</p>
+
+          <form id="pet-name-form" class="pet-name-row">
+            <label for="pet-name-input">主人给小猫起名</label>
+            <div>
+              <input id="pet-name-input" maxlength="12" autocomplete="off" placeholder="例如：饭团">
+              <button type="submit">保存名字</button>
+            </div>
+          </form>
+
+          <div class="cat-skin-picker">
+            <div class="skin-picker-heading">
+              <span>选择它的样子</span>
+              <small>换外观，不清空成长记录</small>
+            </div>
+            <div class="cat-skin-options" role="radiogroup" aria-label="选择小猫外观">
+              <button class="cat-skin-option selected" type="button" data-cat-skin="orange" role="radio" aria-checked="true">
+                <img src="/assets/cat-story-skins/orange-young-v2.png" alt="橘色幼猫">
+                <span><b>橘子汽水</b><small>好奇圆脸幼猫</small></span>
+              </button>
+              <button class="cat-skin-option" type="button" data-cat-skin="tuxedo" role="radio" aria-checked="false">
+                <img src="/assets/cat-story-skins/tuxedo-young-v2.png" alt="黑白燕尾服幼猫">
+                <span><b>奶牛警长</b><small>假装严肃的幼猫</small></span>
+              </button>
+              <button class="cat-skin-option" type="button" data-cat-skin="ragdoll" role="radio" aria-checked="false">
+                <img src="/assets/cat-story-skins/ragdoll-young-v2.png" alt="奶油长毛幼猫">
+                <span><b>云朵布偶</b><small>软乎乎的幼猫</small></span>
+              </button>
+            </div>
+          </div>
+
+          <form id="custom-pet-form" class="custom-pet-studio">
+            <div class="custom-pet-heading">
+              <span>把自家宠物带进来</span>
+              <small>照片只在本机处理 · 自动生成四段成长形态</small>
+            </div>
+            <div class="custom-pet-builder">
+              <label class="pet-photo-drop" for="custom-pet-file">
+                <img id="custom-pet-preview" alt="待生成的宠物照片" hidden>
+                <span id="custom-pet-drop-copy"><b>＋ 选择宠物照片</b><small>PNG / JPG / WebP · 6MB以内</small></span>
+              </label>
+              <input id="custom-pet-file" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+              <div class="custom-pet-fields">
+                <label for="custom-pet-name">它叫什么？</label>
+                <input id="custom-pet-name" maxlength="12" autocomplete="off" placeholder="例如：豆包">
+                <button id="custom-pet-create" type="submit">生成并领养</button>
+              </div>
+            </div>
+            <div id="custom-pet-list" class="custom-pet-list" aria-live="polite"></div>
+          </form>
+
+          <div class="cat-action-preview" aria-label="预览小猫动作">
+            <span>看看它的反应</span>
+            <button type="button" data-cat-action="shy">成功 · 腮红害羞</button>
+            <button type="button" data-cat-action="wiggle">走神 · 摇头拒绝</button>
+            <button type="button" data-cat-action="angry">失败 · 推翻茶杯</button>
+          </div>
+
+          <div class="pet-growth-copy"><span>下一阶段</span><b id="pet-growth-copy">0 / 60 分钟</b></div>
+          <div class="pet-growth-track"><i id="pet-growth-progress"></i></div>
+          <div id="pet-stage-journey" class="pet-stage-journey" aria-label="小猫成长阶段">
+            <span data-stage-step="0"><i></i><b>幼猫</b></span>
+            <span data-stage-step="1"><i></i><b>认主</b></span>
+            <span data-stage-step="2"><i></i><b>少年</b></span>
+            <span data-stage-step="3"><i></i><b>陪伴</b></span>
+            <span data-stage-step="4"><i></i><b>守护</b></span>
+          </div>
+          <div class="pet-care-stats">
+            <span><b id="pet-care-minutes">0</b> 分钟陪伴</span>
+            <span><b id="pet-meals">0</b> 顿猫粮</span>
+          </div>
+          <p id="growth-summary">从第一轮开始积累。</p>
+        </div>
+
+        <div id="pet-room" class="pet-room" data-stage="0" aria-label="小猫的成长房间">
+          <div class="room-sun" aria-hidden="true"></div>
+          <div class="room-shelf" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="room-rug" aria-hidden="true"></div>
+          <div class="nurture-kitten" role="img" aria-label="正在呼吸和眨眼的小猫"></div>
+          <div class="nurture-head" aria-hidden="true"></div>
+          <div class="pet-action-layer" aria-hidden="true">
+            <span class="pet-head-mark pet-head-mark-left">⌇</span>
+            <span class="pet-head-mark pet-head-mark-right">⌇</span>
+            <span class="pet-paw-swipe"></span>
+            <span class="pet-cup"></span>
+            <span class="pet-blush pet-blush-left"></span>
+            <span class="pet-blush pet-blush-right"></span>
+          </div>
+          <div class="level-card">
+            <span id="level-stage">Luna · 刚到家的幼猫</span>
+            <strong>Lv.<b id="level-number">1</b></strong>
+            <div class="level-track"><i id="level-progress"></i></div>
+            <small id="level-copy">0 / 250 XP</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="growth-grid">
+        <article class="chart-card enter-card delay-1">
+          <div class="section-head"><div><p class="eyebrow">LAST 7 DAYS</p><h2>专注温度</h2></div></div>
+          <div id="week-chart" class="week-chart"></div>
+        </article>
+        <article class="badge-card enter-card delay-2">
+          <div class="section-head"><div><p class="eyebrow">ACHIEVEMENTS</p><h2>徽章墙</h2></div></div>
+          <div id="badge-list" class="badge-list"></div>
+        </article>
+        <article class="history-card enter-card delay-3">
+          <div class="section-head"><div><p class="eyebrow">RECENT SESSIONS</p><h2>最近记录</h2></div></div>
+          <div id="history-list" class="history-list"></div>
+        </article>
+        <article class="database-card enter-card delay-4">
+          <p class="eyebrow">LOCAL INTELLIGENCE</p>
+          <h2>本地智能库</h2>
+          <p>关联图谱判断“它是不是任务队友”；提示语库按视频、社交、购物等当前页面类型精准吐槽。</p>
+          <div class="database-stats">
+            <span><b id="app-count">0</b>类主应用</span>
+            <span><b id="relation-count">0</b>条关联</span>
+            <span><b id="learned-count">0</b>条已学习</span>
+            <span><b id="roast-count">0</b>句吐槽</span>
+            <span><b id="roast-category-count">0</b>种页面场景</span>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js?v=7" defer></script>
+</body>
+</html>
