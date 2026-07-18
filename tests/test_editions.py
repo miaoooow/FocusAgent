@@ -59,6 +59,8 @@ class PublicEditionTests(unittest.TestCase):
             self.assertIn(phrase, readme)
         self.assertIn("YouTube 博主 **mocha.**", readme)
         self.assertIn("声音花园", readme)
+        self.assertNotIn("Focus Buddy", readme)
+        self.assertIn("github.com/miaoooow/Focus/", readme)
         for asset in (
             "releases/latest/download/Focus-Windows-Setup.exe",
             "releases/latest/download/Focus-Browser-Extension.zip",

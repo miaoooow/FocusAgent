@@ -215,7 +215,7 @@ class OpenRouterClient:
             headers={
                 "Authorization": f"Bearer {key}",
                 "Content-Type": "application/json",
-                "HTTP-Referer": "https://github.com/miaoooow/Focus-Buddy",
+                "HTTP-Referer": "https://github.com/miaoooow/Focus",
                 "X-Title": "Focus",
             },
             method="POST",
