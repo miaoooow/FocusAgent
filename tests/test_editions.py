@@ -15,7 +15,7 @@ class PublicEditionTests(unittest.TestCase):
         )
         manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest["manifest_version"], 3)
-        self.assertEqual(manifest["version"], "4.1.0")
+        self.assertEqual(manifest["version"], "4.2.0")
         self.assertEqual(
             set(manifest["permissions"]),
             {"storage", "tabs", "alarms", "notifications"},

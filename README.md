@@ -65,19 +65,14 @@ Get-FileHash .\Focus-Windows-Setup.exe -Algorithm SHA256
 
 OpenRouter、Gemini 等托管模型需要识别调用者、统计额度并防止滥用，所以即使模型标注“免费”，直接调用服务商通常仍需要 API Key。把共享 Key 写进网页、扩展或 EXE 会被任何人提取并盗用，因此 Focus 不会这么做。
 
-Focus 4.1 增加了更适合普通用户的方案：
+Focus 4.2 增加了两层账户模式：
 
 ```text
-用户注册 / 登录 Focus
-        ↓
-Focus Cloud 做账户、限流和隐私校验
-        ↓
-Cloudflare Workers AI 免费额度
-        ↓
-返回任务场景或宠物卡通图
+默认：本机账户 → 立即注册并保持登录 → 本地场景库
+云端：Focus Cloud 账户 → 限流和隐私校验 → Workers AI 免费额度
 ```
 
-最终用户只使用 Focus 账户，不需要申请 OpenRouter、Gemini 或 Cloudflare Key。免费额度用完或网络不可用时，任务规划会自动回退本地场景库，不影响计时与监督。
+因此，即使项目维护者还没有部署 Focus Cloud，网页和 EXE 也能正常注册、登录并在当前设备保持会话；用户不需要申请 OpenRouter、Gemini 或 Cloudflare Key。部署云端后，账户会使用免费模型额度，额度用完或网络不可用时自动回退本地场景库。
 
 注意：仓库已经包含完整的 Focus Cloud 可部署服务，但公共实例需要项目维护者先在自己的 Cloudflare 账户部署一次并填入服务地址。部署说明见 [focus_cloud/README.md](focus_cloud/README.md)。这是发布者的一次性配置，不是最终用户的安装步骤。
 
@@ -89,15 +84,15 @@ Cloudflare Workers AI 免费额度
 
 ## 账户功能
 
-网页和 EXE 均已接入相同的注册、登录和退出流程。Focus Cloud 负责：
+网页和 EXE 均已接入注册、登录、退出和会话恢复流程：
 
-- 用户名与密码登录；
-- 30 天登录会话；
+- 未配置云端时：使用本机账户，密码只保存随机盐和 PBKDF2-SHA256 派生值，登录状态保存在当前浏览器或 Windows 用户目录；
+- 配置云端后：使用 Focus Cloud 托管账户和 30 天登录会话；
 - 每日免费 AI 调用限额；
 - 服务端模型凭据隔离；
 - 文本任务规划与宠物照片卡通化。
 
-密码经随机盐和 PBKDF2-SHA256 派生后保存；登录令牌在数据库中只保存 SHA-256 摘要。专注历史、白名单、宠物成长和音频偏好仍默认留在用户设备，不会因为登录自动上传。
+云端登录令牌在数据库中只保存 SHA-256 摘要。专注历史、白名单、宠物成长和音频偏好仍默认留在用户设备，不会因为登录自动上传。本机账户不等于云端同步账户，也不会凭空获得在线模型额度。
 
 ## 主要功能
 
@@ -187,10 +182,10 @@ $env:PYTHONDONTWRITEBYTECODE='1'
 .\.venv\Scripts\python.exe -B -m unittest discover -s tests -v
 ```
 
-构建 4.1.0 发布包：
+构建 4.2.0 发布包：
 
 ```powershell
-.\scripts\build_public_editions.ps1 -Version 4.1.0
+.\scripts\build_public_editions.ps1 -Version 4.2.0
 ```
 
 输出：

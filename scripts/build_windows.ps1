@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '4.1.0',
+    [string]$Version = '4.2.0',
     [switch]$IncludeLocalMusic,
     [switch]$PortableZip,
     [switch]$SkipInstaller

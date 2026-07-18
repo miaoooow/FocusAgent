@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-web-4.0.0";
+const CACHE_NAME = "focus-web-4.2.0";
 const ASSETS = [
   "./",
   "./index.html",
@@ -31,6 +31,31 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const requestUrl = new URL(event.request.url);
+  const shouldRefresh =
+    event.request.mode === "navigate" ||
+    requestUrl.pathname.endsWith("/app.js") ||
+    requestUrl.pathname.endsWith("/styles.css") ||
+    requestUrl.pathname.endsWith("/manifest.webmanifest");
+  if (shouldRefresh) {
+    const fallbackAsset = event.request.mode === "navigate"
+      ? "./index.html"
+      : requestUrl.pathname.endsWith("/app.js")
+        ? "./app.js"
+        : requestUrl.pathname.endsWith("/styles.css")
+          ? "./styles.css"
+          : "./manifest.webmanifest";
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          return response;
+        })
+        .catch(() => caches.match(event.request).then((cached) => cached || caches.match(fallbackAsset)))
+    );
+    return;
+  }
   event.respondWith(
     caches.match(event.request).then((cached) =>
       cached || fetch(event.request).then((response) => {

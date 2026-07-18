@@ -8,10 +8,15 @@ remain available for advanced self-hosted use and are protected with DPAPI.
 from __future__ import annotations
 
 import base64
+import copy
 import ctypes
+import hashlib
+import hmac
 import json
 import os
 import re
+import secrets
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -41,12 +46,14 @@ def _packaged_focus_cloud_url() -> str:
 
 
 DEFAULT_SETTINGS = {
-    "schema_version": 2,
+    "schema_version": 3,
     "text_provider": "local",
     "focus_cloud_url": _packaged_focus_cloud_url(),
     "focus_account_token": "",
     "focus_account_name": "",
     "focus_account_expires": 0,
+    "local_accounts": {},
+    "local_account_name": "",
     "openrouter_model": DEFAULT_OPENROUTER_MODEL,
     "openrouter_key": "",
     "pet_renderer": "local",
@@ -121,14 +128,16 @@ class CloudAISettingsStore:
     def _load(self) -> dict:
         try:
             payload = json.loads(self.path.read_text(encoding="utf-8"))
-            if payload.get("schema_version") not in {1, 2}:
+            if payload.get("schema_version") not in {1, 2, 3}:
                 raise ValueError
-            migrated = {**DEFAULT_SETTINGS, **payload, "schema_version": 2}
+            migrated = {**copy.deepcopy(DEFAULT_SETTINGS), **payload, "schema_version": 3}
+            if not isinstance(migrated.get("local_accounts"), dict):
+                migrated["local_accounts"] = {}
             if not migrated.get("focus_cloud_url"):
                 migrated["focus_cloud_url"] = _packaged_focus_cloud_url()
             return migrated
         except (OSError, ValueError, TypeError, json.JSONDecodeError):
-            return dict(DEFAULT_SETTINGS)
+            return copy.deepcopy(DEFAULT_SETTINGS)
 
     def _save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -150,13 +159,20 @@ class CloudAISettingsStore:
 
     def snapshot(self) -> dict:
         account_token = _unseal(str(self.data.get("focus_account_token", "")))
+        cloud_name = str(self.data.get("focus_account_name", "")).strip()
+        local_name = str(self.data.get("local_account_name", "")).strip()
+        account_mode = "cloud" if account_token and cloud_name else "local" if local_name else "none"
+        account_name = cloud_name if account_mode == "cloud" else local_name
         return {
             "text_provider": self.data["text_provider"],
             "focus_cloud_url": self.data.get("focus_cloud_url", ""),
             "focus_cloud_available": bool(self.data.get("focus_cloud_url")),
             "focus_account": {
-                "signed_in": bool(account_token),
-                "username": str(self.data.get("focus_account_name", "")),
+                "signed_in": account_mode != "none",
+                "username": account_name,
+                "mode": account_mode,
+                "persistent": account_mode != "none",
+                "ai_available": account_mode == "cloud" and bool(self.data.get("focus_cloud_url")),
                 "expires_at": int(self.data.get("focus_account_expires", 0) or 0),
             },
             "openrouter_model": self.data["openrouter_model"],
@@ -228,7 +244,69 @@ class CloudAISettingsStore:
         self.data["focus_account_token"] = _seal(token)
         self.data["focus_account_name"] = username
         self.data["focus_account_expires"] = int(payload.get("expires_at", 0) or 0)
+        self.data["local_account_name"] = ""
         self.data["text_provider"] = "focus_cloud"
+        self._save()
+        return self.snapshot()
+
+    @staticmethod
+    def _local_credentials(username: str, password: str) -> tuple[str, str]:
+        normalized = str(username or "").strip().casefold()
+        if not re.fullmatch(r"[a-z0-9_\-\u4e00-\u9fff]{3,24}", normalized):
+            raise ValueError("用户名需为3—24位中文、字母、数字、下划线或短横线")
+        secret = str(password or "")
+        if len(secret) < 8 or len(secret) > 72:
+            raise ValueError("密码需为8—72个字符")
+        return normalized, secret
+
+    @staticmethod
+    def _local_password_hash(password: str, salt: bytes) -> str:
+        digest = hashlib.pbkdf2_hmac(
+            "sha256",
+            password.encode("utf-8"),
+            salt,
+            120_000,
+        )
+        return base64.b64encode(digest).decode("ascii")
+
+    def register_local_account(self, username: str, password: str) -> dict:
+        normalized, secret = self._local_credentials(username, password)
+        accounts = self.data.setdefault("local_accounts", {})
+        if normalized in accounts:
+            raise ValueError("这个用户名已经存在，请直接登录")
+        salt = secrets.token_bytes(16)
+        accounts[normalized] = {
+            "password_salt": base64.b64encode(salt).decode("ascii"),
+            "password_hash": self._local_password_hash(secret, salt),
+            "created_at": int(time.time()),
+        }
+        self.data["local_account_name"] = normalized
+        self.data["focus_account_token"] = ""
+        self.data["focus_account_name"] = ""
+        self.data["focus_account_expires"] = 0
+        self.data["text_provider"] = "local"
+        self._save()
+        return self.snapshot()
+
+    def login_local_account(self, username: str, password: str) -> dict:
+        normalized, secret = self._local_credentials(username, password)
+        account = self.data.get("local_accounts", {}).get(normalized)
+        candidate = ""
+        expected = ""
+        if isinstance(account, dict):
+            try:
+                salt = base64.b64decode(str(account["password_salt"]), validate=True)
+                candidate = self._local_password_hash(secret, salt)
+                expected = str(account["password_hash"])
+            except (KeyError, TypeError, ValueError):
+                pass
+        if not expected or not hmac.compare_digest(candidate, expected):
+            raise ValueError("用户名或密码不正确")
+        self.data["local_account_name"] = normalized
+        self.data["focus_account_token"] = ""
+        self.data["focus_account_name"] = ""
+        self.data["focus_account_expires"] = 0
+        self.data["text_provider"] = "local"
         self._save()
         return self.snapshot()
 
@@ -236,6 +314,7 @@ class CloudAISettingsStore:
         self.data["focus_account_token"] = ""
         self.data["focus_account_name"] = ""
         self.data["focus_account_expires"] = 0
+        self.data["local_account_name"] = ""
         if self.data.get("text_provider") == "focus_cloud":
             self.data["text_provider"] = "local"
         if self.data.get("pet_renderer") == "focus_cloud":

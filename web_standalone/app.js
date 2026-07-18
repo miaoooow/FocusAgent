@@ -10,6 +10,8 @@ const CLOUD_URL = String(
 ).trim().replace(/\/$/, "");
 const CLOUD_TOKEN_KEY = "focus-cloud-token";
 const CLOUD_USER_KEY = "focus-cloud-user";
+const LOCAL_ACCOUNTS_KEY = "focus-local-accounts-v1";
+const LOCAL_SESSION_KEY = "focus-local-session-v1";
 const extensionRequests = new Map();
 let extensionConnected = DIRECT_EXTENSION_PAGE;
 
@@ -100,6 +102,103 @@ async function cloudApi(path, payload = null, authenticated = true) {
   const result = await response.json().catch(() => ({ ok: false, error: "Focus Cloud返回异常" }));
   if (!response.ok || !result.ok) throw new Error(result.error || "Focus Cloud请求失败");
   return result.data;
+}
+
+function localAccounts() {
+  try {
+    const accounts = JSON.parse(localStorage.getItem(LOCAL_ACCOUNTS_KEY) || "{}");
+    return accounts && typeof accounts === "object" && !Array.isArray(accounts) ? accounts : {};
+  } catch {
+    return {};
+  }
+}
+
+function normalizeAccountName(value) {
+  const username = String(value || "").trim().toLowerCase();
+  if (!/^[a-z0-9_\-\u4e00-\u9fff]{3,24}$/u.test(username)) {
+    throw new Error("用户名需为3—24位中文、字母、数字、下划线或短横线。");
+  }
+  return username;
+}
+
+function validateAccountPassword(value) {
+  const password = String(value || "");
+  if (password.length < 8 || password.length > 72) {
+    throw new Error("密码需为8—72个字符。");
+  }
+  return password;
+}
+
+function bytesToBase64(bytes) {
+  let binary = "";
+  bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+  return btoa(binary);
+}
+
+function base64ToBytes(value) {
+  return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+}
+
+async function localPasswordHash(password, salt) {
+  if (!crypto.subtle) throw new Error("当前浏览器不支持安全的本机账户存储。");
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt, iterations: 120000 },
+    key,
+    256
+  );
+  return bytesToBase64(new Uint8Array(bits));
+}
+
+async function registerLocalAccount(username, password) {
+  const normalized = normalizeAccountName(username);
+  const secret = validateAccountPassword(password);
+  const accounts = localAccounts();
+  if (accounts[normalized]) throw new Error("这个用户名已经存在，请直接登录。");
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  accounts[normalized] = {
+    salt: bytesToBase64(salt),
+    passwordHash: await localPasswordHash(secret, salt),
+    createdAt: Date.now(),
+  };
+  localStorage.setItem(LOCAL_ACCOUNTS_KEY, JSON.stringify(accounts));
+  localStorage.setItem(LOCAL_SESSION_KEY, normalized);
+  return { username: normalized, mode: "local" };
+}
+
+async function loginLocalAccount(username, password) {
+  const normalized = normalizeAccountName(username);
+  const secret = validateAccountPassword(password);
+  const account = localAccounts()[normalized];
+  let candidate = "";
+  if (account?.salt && account?.passwordHash) {
+    try {
+      candidate = await localPasswordHash(secret, base64ToBytes(account.salt));
+    } catch {
+      candidate = "";
+    }
+  }
+  if (!account || candidate !== account.passwordHash) {
+    throw new Error("用户名或密码不正确。");
+  }
+  localStorage.setItem(LOCAL_SESSION_KEY, normalized);
+  return { username: normalized, mode: "local" };
+}
+
+function accountState() {
+  const cloudName = localStorage.getItem(CLOUD_USER_KEY) || "";
+  if (cloudName && cloudToken()) return { signedIn: true, username: cloudName, mode: "cloud" };
+  const localName = localStorage.getItem(LOCAL_SESSION_KEY) || "";
+  if (localName && localAccounts()[localName]) {
+    return { signedIn: true, username: localName, mode: "local" };
+  }
+  return { signedIn: false, username: "", mode: "none" };
 }
 
 function normalizeDomain(value) {
@@ -741,20 +840,23 @@ function resetPet() {
 }
 
 function renderAccount() {
-  const username = localStorage.getItem(CLOUD_USER_KEY) || "";
-  const signedIn = Boolean(username && cloudToken());
-  $("#account-status").textContent = signedIn
-    ? `已登录 ${username} · 任务规划会优先使用Focus免费模型`
+  const account = accountState();
+  $("#account-status").textContent = account.signedIn
+    ? account.mode === "cloud"
+      ? `已登录 ${account.username} · 任务规划会优先使用Focus免费模型`
+      : `已登录 ${account.username} · 登录状态与专注记录保存在当前浏览器`
     : CLOUD_URL
       ? "尚未登录。注册或登录后无需再填写任何API Key。"
-      : "Focus Cloud尚未由项目维护者部署；本地规划仍可使用。";
-  $("#account-username").value = signedIn ? username : "";
-  $("#account-username").disabled = signedIn;
-  $("#account-password").hidden = signedIn;
-  $("#account-register").hidden = signedIn;
-  $("#account-login").hidden = signedIn;
-  $("#account-logout").hidden = !signedIn;
-  $("#account-button").textContent = signedIn ? `${username} · 免费AI` : "登录 / 注册";
+      : "可直接注册本机账户；关闭网页后仍会保持登录，不需要API Key。";
+  $("#account-username").value = account.signedIn ? account.username : "";
+  $("#account-username").disabled = account.signedIn;
+  $("#account-password").hidden = account.signedIn;
+  $("#account-register").hidden = account.signedIn;
+  $("#account-login").hidden = account.signedIn;
+  $("#account-logout").hidden = !account.signedIn;
+  $("#account-button").textContent = account.signedIn
+    ? `${account.username} · ${account.mode === "cloud" ? "免费AI" : "本机账户"}`
+    : "登录 / 注册";
   renderPetMode();
 }
 
@@ -770,17 +872,22 @@ async function submitAccount(action) {
   register.disabled = true;
   login.disabled = true;
   try {
-    const account = await cloudApi(
-      `/v1/auth/${action}`,
-      { username, password },
-      false
-    );
-    localStorage.setItem(CLOUD_TOKEN_KEY, account.token);
-    localStorage.setItem(CLOUD_USER_KEY, account.username);
+    const account = CLOUD_URL
+      ? await cloudApi(`/v1/auth/${action}`, { username, password }, false)
+      : action === "register"
+        ? await registerLocalAccount(username, password)
+        : await loginLocalAccount(username, password);
+    if (CLOUD_URL) {
+      localStorage.setItem(CLOUD_TOKEN_KEY, account.token);
+      localStorage.setItem(CLOUD_USER_KEY, account.username);
+      localStorage.removeItem(LOCAL_SESSION_KEY);
+    }
     $("#account-password").value = "";
     renderAccount();
     $("#form-message").textContent =
-      action === "register" ? "账户创建成功，免费AI已连接。" : "登录成功，免费AI已连接。";
+      account.mode === "local"
+        ? action === "register" ? "本机账户创建成功，并会保持登录。" : "本机账户登录成功，状态已保存。"
+        : action === "register" ? "云端账户创建成功，免费AI已连接。" : "云端账户登录成功，免费AI已连接。";
     renderPlan();
   } catch (error) {
     $("#account-status").textContent = error.message;
@@ -798,6 +905,7 @@ async function logoutAccount() {
   }
   localStorage.removeItem(CLOUD_TOKEN_KEY);
   localStorage.removeItem(CLOUD_USER_KEY);
+  localStorage.removeItem(LOCAL_SESSION_KEY);
   renderAccount();
   $("#form-message").textContent = "已退出Focus账户，本地专注记录没有删除。";
   renderPlan();

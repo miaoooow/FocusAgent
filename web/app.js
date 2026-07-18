@@ -809,10 +809,12 @@ function renderCloudAISettings(settings) {
   $("#custom-pet-renderer").value = settings.pet_renderer || "local";
   const account = settings.focus_account || {};
   $("#focus-account-status").textContent = account.signed_in
-    ? `已登录 ${account.username} · 用户无需提供API Key`
+    ? account.mode === "cloud"
+      ? `已登录 ${account.username} · Focus免费AI已连接，无需API Key`
+      : `已登录 ${account.username} · 本机账户会在这台电脑上保持登录`
     : settings.focus_cloud_available
       ? "尚未登录。注册和登录均不会要求服务商密钥。"
-      : "Focus Cloud尚未部署，当前仍可使用本地场景库。";
+      : "可直接注册本机账户并保存登录；Focus Cloud上线后可升级为云端账户。";
   $("#focus-account-name").value = account.signed_in ? account.username : "";
   $("#focus-account-name").disabled = Boolean(account.signed_in);
   $("#focus-account-password").hidden = Boolean(account.signed_in);
@@ -826,7 +828,7 @@ function renderCloudAISettings(settings) {
     ? `已安全保存 · ${settings.gemini_image_model} · 图片生成可能计费`
     : "云端图片生成可能产生服务商费用，上传前会再次征得同意。";
   $("#ai-settings-button").textContent = account.signed_in
-    ? `${account.username} · 免费AI`
+    ? `${account.username} · ${account.mode === "cloud" ? "免费AI" : "本机账户"}`
     : "登录 Focus";
   updatePetRendererConsent();
 }
@@ -847,7 +849,7 @@ function updatePetRendererConsent() {
 
 planButton.addEventListener("click", planGoal);
 startButton.addEventListener("click", startSession);
-const currentUIVersion = "4.1.0";
+const currentUIVersion = "4.2.0";
 const savedAIPlanning = localStorage.getItem("focus-ai-planning");
 if (localStorage.getItem("focus-ui-version") !== currentUIVersion) {
   aiPlanToggle.checked = false;
@@ -912,12 +914,19 @@ async function submitFocusAccount(action) {
     const settings = await api(`/api/account/${action}`, { username, password });
     $("#focus-account-password").value = "";
     renderCloudAISettings(settings);
-    $("#text-provider").value = "focus_cloud";
-    $("#pet-renderer-setting").value = "focus_cloud";
-    $("#custom-pet-renderer").value = "focus_cloud";
-    aiPlanToggle.checked = true;
-    localStorage.setItem("focus-ai-planning", "true");
-    showToast(action === "register" ? "账户已创建，免费AI已连接" : "已登录，免费AI已连接");
+    const cloudAccount = settings.focus_account?.mode === "cloud";
+    $("#text-provider").value = cloudAccount ? "focus_cloud" : "local";
+    if (cloudAccount) {
+      $("#pet-renderer-setting").value = "focus_cloud";
+      $("#custom-pet-renderer").value = "focus_cloud";
+    }
+    aiPlanToggle.checked = cloudAccount;
+    localStorage.setItem("focus-ai-planning", String(cloudAccount));
+    showToast(
+      cloudAccount
+        ? action === "register" ? "云端账户已创建，免费AI已连接" : "云端账户已登录，免费AI已连接"
+        : action === "register" ? "本机账户已创建并保持登录" : "本机账户已登录并保存"
+    );
   } catch (error) {
     showToast(error.message, true);
   } finally {

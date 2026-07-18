@@ -100,6 +100,46 @@ class CloudAITests(unittest.TestCase):
         self.assertEqual(request.full_url, "https://focus.example/v1/auth/register")
         self.assertNotIn("Authorization", dict(request.header_items()))
 
+    def test_local_account_register_login_and_session_survive_restart(self):
+        snapshot = self.store.register_local_account("Luna_01", "password123")
+        self.assertTrue(snapshot["focus_account"]["signed_in"])
+        self.assertEqual(snapshot["focus_account"]["username"], "luna_01")
+        self.assertEqual(snapshot["focus_account"]["mode"], "local")
+        self.assertTrue(snapshot["focus_account"]["persistent"])
+        self.assertFalse(snapshot["focus_account"]["ai_available"])
+        self.assertEqual(snapshot["text_provider"], "local")
+
+        persisted = self.store.path.read_text(encoding="utf-8")
+        self.assertNotIn("password123", persisted)
+        self.assertIn("password_hash", persisted)
+        self.assertIn("password_salt", persisted)
+
+        reloaded = CloudAISettingsStore(self.store.path)
+        self.assertTrue(reloaded.snapshot()["focus_account"]["signed_in"])
+        reloaded.clear_focus_account()
+        self.assertFalse(reloaded.snapshot()["focus_account"]["signed_in"])
+        signed_in = reloaded.login_local_account("LUNA_01", "password123")
+        self.assertEqual(signed_in["focus_account"]["username"], "luna_01")
+        with self.assertRaisesRegex(ValueError, "用户名或密码不正确"):
+            reloaded.login_local_account("luna_01", "wrong-password")
+
+    def test_local_account_rejects_duplicate_and_invalid_credentials(self):
+        with self.assertRaisesRegex(ValueError, "用户名需为"):
+            self.store.register_local_account("x", "password123")
+        with self.assertRaisesRegex(ValueError, "密码需为"):
+            self.store.register_local_account("valid_user", "short")
+        self.store.register_local_account("valid_user", "password123")
+        with self.assertRaisesRegex(ValueError, "已经存在"):
+            self.store.register_local_account("VALID_USER", "password456")
+
+    def test_separate_local_stores_do_not_share_in_memory_accounts(self):
+        first = CloudAISettingsStore(ROOT / "first.json")
+        second = CloudAISettingsStore(ROOT / "second.json")
+        first.register_local_account("same_name", "password123")
+        self.assertFalse(second.snapshot()["focus_account"]["signed_in"])
+        created = second.register_local_account("same_name", "password456")
+        self.assertEqual(created["focus_account"]["username"], "same_name")
+
     def test_gemini_image_response_becomes_a_local_data_url(self):
         self.store.update({"gemini_api_key": "key"})
         generated = base64.b64encode(b"generated-png").decode("ascii")

@@ -263,14 +263,20 @@ class FocusController:
 
     def register_focus_account(self, username: str, password: str) -> dict:
         with self.lock:
+            if not self.cloud_settings.focus_cloud_url():
+                return self.cloud_settings.register_local_account(username, password)
             return self.focus_cloud_client.register(username, password)
 
     def login_focus_account(self, username: str, password: str) -> dict:
         with self.lock:
+            if not self.cloud_settings.focus_cloud_url():
+                return self.cloud_settings.login_local_account(username, password)
             return self.focus_cloud_client.login(username, password)
 
     def logout_focus_account(self) -> dict:
         with self.lock:
+            if self.cloud_settings.snapshot()["focus_account"].get("mode") != "cloud":
+                return self.cloud_settings.clear_focus_account()
             return self.focus_cloud_client.logout()
 
     def create_custom_pet(

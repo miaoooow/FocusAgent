@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '4.1.0',
+    [string]$Version = '4.2.0',
     [bool]$IncludeLocalMusic = $false,
     [switch]$SkipWindowsInstaller
 )

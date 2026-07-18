@@ -6,7 +6,7 @@
   <link rel="icon" href="/assets/branding/focus-icon.png" type="image/png">
   <meta name="color-scheme" content="dark">
   <title>Focus · 一键专注版</title>
-  <link rel="stylesheet" href="/styles.css?v=9">
+  <link rel="stylesheet" href="/styles.css?v=10">
 </head>
 <body>
   <div class="ambient ambient-a"></div>
@@ -416,16 +416,16 @@
   <dialog id="ai-settings-dialog" class="ai-settings-dialog">
     <form id="ai-settings-form" method="dialog">
       <div class="ai-dialog-head">
-        <div><p class="eyebrow">FOCUS ACCOUNT & FREE AI</p><h2>登录后直接使用免费模型</h2></div>
+        <div><p class="eyebrow">FOCUS ACCOUNT & FREE AI</p><h2>注册后保持登录，云端上线即可使用免费模型</h2></div>
         <button id="ai-settings-close" type="button" aria-label="关闭">×</button>
       </div>
-      <p class="ai-dialog-intro">普通用户不需要 API Key，也不需要下载模型。Focus 账户使用项目服务端的免费额度；额度不可用时自动回退本地场景库。</p>
+      <p class="ai-dialog-intro">普通用户不需要 API Key，也不需要下载模型。未配置 Focus Cloud 时会创建持久化本机账户；云端上线后可使用项目服务端的免费额度。</p>
       <div class="ai-provider-card account-card">
         <label for="focus-account-name">Focus 账户</label>
         <input id="focus-account-name" autocomplete="username" maxlength="24" placeholder="3—24位用户名">
         <label for="focus-account-password">密码</label>
         <input id="focus-account-password" type="password" autocomplete="current-password" maxlength="72" placeholder="至少8位">
-        <small id="focus-account-status">尚未登录。注册和登录均不会要求服务商密钥。</small>
+        <small id="focus-account-status">可直接注册本机账户并保持登录，不要求服务商密钥。</small>
         <div class="account-actions">
           <button id="focus-account-register" type="button">注册</button>
           <button id="focus-account-login" type="button">登录</button>
@@ -470,6 +470,6 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="/app.js?v=9" defer></script>
+  <script src="/app.js?v=10" defer></script>
 </body>
 </html>

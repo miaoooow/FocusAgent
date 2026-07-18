@@ -8,7 +8,7 @@
     <meta name="focus-cloud-url" content="" />
     <title>Focus · 网页版</title>
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=4.2.0" />
   </head>
   <body>
     <div class="ambient ambient-one"></div>
@@ -36,7 +36,7 @@
           <h1>把注意力留给<br /><em>真正想完成的事。</em></h1>
           <p id="hero-intro" class="intro">
             安装一次 Focus 扩展后，Luna 会把目标变成本轮网站白名单，
-            即使切换标签页也能继续监督。登录可直接使用免费 AI，不需要 API Key。
+            即使切换标签页也能继续监督。本机账户可直接注册并保持登录，不需要 API Key。
           </p>
           <div class="hero-meta">
             <span>一次安装扩展</span><span>本地保存</span><span>免费 AI 可选</span>
@@ -205,10 +205,10 @@
     <dialog id="account-dialog" class="account-dialog">
       <form id="account-form" method="dialog">
         <div class="account-head">
-          <div><p class="eyebrow">FOCUS ACCOUNT</p><h2>登录后直接使用免费模型</h2></div>
+          <div><p class="eyebrow">FOCUS ACCOUNT</p><h2>注册一次，保持登录</h2></div>
           <button id="account-close" type="button" aria-label="关闭">×</button>
         </div>
-        <p>账户由 Focus Cloud 托管。用户不需要申请 OpenRouter、Gemini 或 Cloudflare Key；免费额度用完时自动回退本地规划。</p>
+        <p>Focus Cloud 未配置时，账户加密派生信息与登录状态保存在当前浏览器；配置云端后会切换为托管账户和免费模型。</p>
         <label for="account-username">用户名</label>
         <input id="account-username" maxlength="24" autocomplete="username" placeholder="3—24位中文、字母或数字" />
         <label for="account-password">密码</label>
@@ -221,6 +221,6 @@
         </div>
       </form>
     </dialog>
-    <script src="app.js"></script>
+    <script src="app.js?v=4.2.0"></script>
   </body>
 </html>
