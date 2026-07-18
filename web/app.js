@@ -217,7 +217,9 @@ async function startSession() {
     currentState = await api("/api/session/start", { goal, config });
     rewardShown = false;
     renderState(currentState);
-    showToast("本轮开始。小猫已上岗。");
+    showToast(currentState.browser_bridge?.connected
+      ? "本轮开始。小猫已上岗。"
+      : "本轮已开始。正在等待扩展上报，连接恢复前不会误扣。");
   } catch (error) {
     showToast(error.message, true);
   }
@@ -545,10 +547,10 @@ function renderBrowserBridge(bridge) {
   const connected = Boolean(bridge.connected);
   card.dataset.connected = connected ? "true" : "false";
   card.dataset.extensionPath = bridge.extension_path || "browser_extension";
-  $("#browser-bridge-title").textContent = connected ? "具体网址识别已连接" : "具体网址识别未启用";
+  $("#browser-bridge-title").textContent = connected ? "具体网址识别已连接" : "扩展正在等待上报";
   $("#browser-bridge-copy").textContent = connected
     ? `${bridge.browser || "浏览器"} 正在识别 ${bridge.current_domain || "当前域名"}，域名只留在内存里。`
-    : "网页与 EXE 都需要同一个 Focus 扩展。安装一次后，它会自动上报当前活动域名，不需要再添加桥接文件。";
+    : "本轮仍可正常开始；暂时没有收到域名时不会扣分。打开或刷新任意普通网页后，Focus 扩展会自动恢复连接。";
 }
 
 function formatAudioTime(seconds) {
@@ -849,7 +851,7 @@ function updatePetRendererConsent() {
 
 planButton.addEventListener("click", planGoal);
 startButton.addEventListener("click", startSession);
-const currentUIVersion = "4.2.0";
+const currentUIVersion = "4.2.1";
 const savedAIPlanning = localStorage.getItem("focus-ai-planning");
 if (localStorage.getItem("focus-ui-version") !== currentUIVersion) {
   aiPlanToggle.checked = false;

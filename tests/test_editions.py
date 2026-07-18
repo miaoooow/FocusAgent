@@ -1,6 +1,9 @@
 import json
+import re
 import unittest
 from pathlib import Path
+
+from focus_agent.browser_bridge import BrowserBridge
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -11,26 +14,52 @@ class PublicEditionTests(unittest.TestCase):
         folder = ROOT / "browser_extension_standalone"
         self.assertEqual(
             {item.name for item in folder.iterdir() if item.is_file()},
-            {"manifest.json", "background.js", "bridge.js", "popup.html", "popup.css", "popup.js"},
+            {
+                "manifest.json",
+                "background.js",
+                "bridge.js",
+                "heartbeat.js",
+                "popup.html",
+                "popup.css",
+                "popup.js",
+            },
         )
         manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest["manifest_version"], 3)
-        self.assertEqual(manifest["version"], "4.2.0")
+        self.assertEqual(manifest["version"], "4.2.1")
         self.assertEqual(
             set(manifest["permissions"]),
             {"storage", "tabs", "alarms", "notifications"},
         )
         self.assertEqual(manifest["host_permissions"], ["http://127.0.0.1/*"])
-        self.assertIn("https://miaoooow.github.io/Focus/*", manifest["content_scripts"][0]["matches"])
-        self.assertNotIn("http://127.0.0.1/*", manifest["content_scripts"][0]["matches"])
+        scripts = {
+            tuple(entry["js"]): set(entry["matches"])
+            for entry in manifest["content_scripts"]
+        }
+        self.assertEqual(scripts[("heartbeat.js",)], {"http://*/*", "https://*/*"})
+        self.assertIn("https://miaoooow.github.io/Focus/*", scripts[("bridge.js",)])
+        self.assertNotIn(
+            "http://127.0.0.1/*",
+            set().union(*(entry["matches"] for entry in manifest["content_scripts"])),
+        )
         popup = (folder / "popup.js").read_text(encoding="utf-8")
         background = (folder / "background.js").read_text(encoding="utf-8")
+        heartbeat = (folder / "heartbeat.js").read_text(encoding="utf-8")
         self.assertIn('chrome.runtime.getURL("focus.html")', popup)
         self.assertIn('page.searchParams.set("domain", domain)', popup)
         self.assertIn("activeTabSummary", background)
         self.assertIn("lastEvent", background)
         self.assertIn("publishActiveTabToDesktop", background)
+        self.assertIn('"focus-desktop-heartbeat": publishActiveTabToDesktop', background)
+        self.assertIn('type: "focus-desktop-heartbeat"', heartbeat)
+        self.assertIn('document.visibilityState !== "visible"', heartbeat)
+        interval = re.search(r"HEARTBEAT_INTERVAL_MS\s*=\s*(\d+)", heartbeat)
+        self.assertIsNotNone(interval)
+        self.assertLess(int(interval.group(1)), BrowserBridge.FRESH_SECONDS * 1000)
         self.assertIn("focus-page-v1", (folder / "bridge.js").read_text(encoding="utf-8"))
+        for build_script in ("build_windows.ps1", "build_public_editions.ps1"):
+            script = (ROOT / "scripts" / build_script).read_text(encoding="utf-8")
+            self.assertIn("heartbeat.js", script)
 
     def test_web_edition_contains_only_runtime_files(self):
         folder = ROOT / "web_standalone"
@@ -74,6 +103,9 @@ class PublicEditionTests(unittest.TestCase):
         self.assertNotIn("Focus Buddy", readme)
         self.assertIn("github.com/miaoooow/Focus/", readme)
         self.assertIn("Focus Cloud", readme)
+        self.assertIn("当前仍存在的问题", readme)
+        self.assertIn("4.2.1 扩展连接修复", readme)
+        self.assertIn("欢迎指正与共同解决", readme)
         self.assertIn("都使用同一个 Focus 浏览器扩展", readme)
         for asset in (
             "releases/latest/download/Focus-Windows-Setup.exe",

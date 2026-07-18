@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '4.2.0',
+    [string]$Version = '4.2.1',
     [switch]$IncludeLocalMusic,
     [switch]$PortableZip,
     [switch]$SkipInstaller
@@ -45,7 +45,7 @@ if (Test-Path -LiteralPath $ExtensionTarget) {
     Remove-Item -LiteralPath $ExtensionTarget -Recurse -Force
 }
 New-Item -ItemType Directory -Path $ExtensionTarget -Force | Out-Null
-foreach ($name in @('manifest.json','background.js','bridge.js','popup.html','popup.css','popup.js')) {
+foreach ($name in @('manifest.json','background.js','bridge.js','heartbeat.js','popup.html','popup.css','popup.js')) {
     Copy-Item -LiteralPath (Join-Path $ProjectRoot "browser_extension_standalone\$name") `
         -Destination (Join-Path $ExtensionTarget $name)
 }

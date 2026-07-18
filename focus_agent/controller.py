@@ -317,10 +317,6 @@ class FocusController:
             raise ValueError("缺少会话配置")
         config_payload = {**config_payload, "needs_clarification": False, "clarification_question": ""}
         config = parse_session_response(json.dumps(config_payload, ensure_ascii=False))
-        if not self.browser_bridge.status()["connected"]:
-            raise ValueError(
-                "Focus扩展尚未连接：网页和EXE统一依赖扩展识别当前网站。请先安装并启用一次Focus扩展"
-            )
         with self.lock:
             if self.engine and self.engine.state in {SessionState.RUNNING, SessionState.PAUSED}:
                 raise ValueError("已有一轮专注正在进行")

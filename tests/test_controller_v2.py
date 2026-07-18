@@ -70,6 +70,14 @@ class ControllerV2Tests(unittest.TestCase):
         )
         self.assertEqual(memory["mappings"][0]["targets"][0]["value"], "PyCharm64.exe")
 
+    def test_session_starts_while_extension_heartbeat_is_pending(self):
+        plan = self.controller.plan_goal("25分钟完成课程报告", use_ai=False)
+        self.assertFalse(self.controller.browser_bridge.status()["connected"])
+        state = self.controller.start_session({"goal": plan["goal"], "config": plan["config"]})
+        self.assertEqual(state["state"], "running")
+        self.assertFalse(state["browser_bridge"]["connected"])
+        self.controller.stop_session()
+
     def test_custom_pet_controller_flow(self):
         profile = self.controller.create_custom_pet("豆包", sample_pet_data_url())
         self.assertTrue(profile["pet"]["skin"].startswith("custom:"))

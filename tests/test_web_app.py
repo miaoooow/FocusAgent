@@ -124,7 +124,7 @@ class WebAppTests(unittest.TestCase):
             self.assertIn("default-src 'self'", csp)
             self.assertIn("media-src 'self'", csp)
             self.assertIn("/styles.css?v=10", html)
-            self.assertIn("/app.js?v=10", html)
+            self.assertIn("/app.js?v=11", html)
             self.assertIn("免费 AI 增强", html)
             self.assertIn("注册后保持登录", html)
             self.assertIn("选择雨幕、溪流、海岸或鸟鸣，让小猫替你守住这一段节奏。", html)

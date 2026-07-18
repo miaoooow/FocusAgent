@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '4.2.0',
+    [string]$Version = '4.2.1',
     [bool]$IncludeLocalMusic = $false,
     [switch]$SkipWindowsInstaller
 )
@@ -37,7 +37,7 @@ if (-not $SkipWindowsInstaller) {
     }
 }
 
-$BrowserFiles = @('manifest.json','background.js','bridge.js','popup.html','popup.css','popup.js')
+$BrowserFiles = @('manifest.json','background.js','bridge.js','heartbeat.js','popup.html','popup.css','popup.js')
 foreach ($name in $BrowserFiles) {
     Copy-Item -LiteralPath (Join-Path $ProjectRoot "browser_extension_standalone\$name") `
         -Destination (Join-Path $BrowserStage $name)

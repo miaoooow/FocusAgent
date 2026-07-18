@@ -398,6 +398,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   const actions = {
+    "focus-desktop-heartbeat": publishActiveTabToDesktop,
     ping: async () => ({ connected: true, version: chrome.runtime.getManifest().version }),
     state: readState,
     start: () => startSession(message.payload || {}),
